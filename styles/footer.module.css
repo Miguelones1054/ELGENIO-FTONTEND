@@ -1,0 +1,144 @@
+.footer {
+  position: relative;
+  z-index: 10;
+  margin-top: auto;
+  padding: 60px 48px 32px;
+  background: #081049;
+  color: #f4f6fc;
+  font-family: var(--font-body), "Poppins", sans-serif;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footerCompact {
+  padding: 32px 24px 20px;
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  gap: 56px;
+  align-items: start;
+  width: min(1100px, 100%);
+  margin: 0 auto;
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.brandAbout {
+  margin: 0;
+  color: rgba(244, 246, 252, 0.65);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  max-width: 320px;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 200px));
+  gap: 48px;
+  justify-content: end;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.columnTitle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.columnNav,
+.columnBody {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.link,
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.link:hover,
+.socialLink:hover {
+  color: var(--color-accent, #ff6a00);
+  transform: translateX(3px);
+}
+
+.socialIcon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  display: block;
+  object-fit: contain;
+}
+
+.empty {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.86rem;
+}
+
+.bottom {
+  width: min(1100px, 100%);
+  margin: 48px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.copy {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 980px) {
+  .footer {
+    padding: 44px 24px 28px;
+  }
+
+  .inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+    justify-content: stretch;
+  }
+
+  .bottom {
+    margin-top: 36px;
+    padding-top: 20px;
+  }
+}
+
+@media (max-width: 540px) {
+  .columns {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}

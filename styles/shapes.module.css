@@ -1,0 +1,130 @@
+.leftArc {
+  position: absolute;
+  left: -78px;
+  top: 34%;
+  z-index: 6;
+  width: 120px;
+  height: 220px;
+  color: var(--color-ring);
+  pointer-events: none;
+}
+
+.arcMark {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sectionRings {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  color: var(--color-ring);
+  pointer-events: none;
+}
+
+.sectionRing {
+  position: absolute;
+}
+
+.sectionRingPrimary {
+  width: min(42vw, 340px);
+  height: min(76vw, 620px);
+  opacity: 0.72;
+  animation: ringFloat1 24s ease-in-out infinite alternate;
+}
+
+.sectionRingLeft {
+  left: -18%;
+  top: 12%;
+}
+
+.sectionRingRight {
+  right: -18%;
+  top: 12%;
+  transform: scaleX(-1);
+}
+
+.sectionRingSecondary {
+  width: min(22vw, 180px);
+  height: min(40vw, 330px);
+  opacity: 0.38;
+  animation: ringFloat2 28s ease-in-out infinite alternate;
+}
+
+.sectionRingSecondaryLeft {
+  right: -6%;
+  bottom: 8%;
+  transform: scaleX(-1) rotate(12deg);
+}
+
+.sectionRingSecondaryRight {
+  left: -6%;
+  bottom: 8%;
+  transform: rotate(12deg);
+}
+
+@keyframes ringFloat1 {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+  100% {
+    transform: translateY(8px);
+  }
+}
+
+@keyframes ringFloat2 {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(14px);
+  }
+  100% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sectionRingPrimary,
+  .sectionRingSecondary {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .leftArc {
+    display: block;
+    left: -42px;
+    top: 42%;
+    width: 88px;
+    height: 160px;
+    opacity: 0.9;
+  }
+
+  .sectionRingPrimary {
+    width: min(58vw, 260px);
+    height: min(105vw, 470px);
+    opacity: 0.55;
+  }
+
+  .sectionRingLeft {
+    left: -28%;
+    top: 18%;
+  }
+
+  .sectionRingRight {
+    right: -28%;
+    top: 18%;
+  }
+
+  .sectionRingSecondary {
+    width: min(34vw, 140px);
+    height: min(62vw, 250px);
+    opacity: 0.28;
+  }
+}

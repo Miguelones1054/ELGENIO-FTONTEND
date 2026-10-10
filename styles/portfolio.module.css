@@ -1,0 +1,871 @@
+.page {
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--color-background);
+}
+
+.contentShell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   FONDOS ORGÁNICOS CON ANILLOS SUAVES (RESPIRACIÓN AMBIENTAL)
+   ========================================================= */
+.pageBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bgRing {
+  position: absolute;
+  color: var(--color-ring);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.bgRing1 {
+  top: 80px;
+  right: -10vw;
+  width: min(52vw, 460px);
+  height: min(90vw, 780px);
+  opacity: 0.65;
+  transform: scaleX(-1) rotate(-8deg);
+  animation: ambientFloat1 28s ease-in-out infinite alternate;
+}
+
+.bgRing2 {
+  top: 680px;
+  left: -8vw;
+  width: min(44vw, 400px);
+  height: min(80vw, 700px);
+  opacity: 0.48;
+  transform: rotate(16deg);
+  animation: ambientFloat2 32s ease-in-out infinite alternate;
+}
+
+.bgRing3 {
+  top: 1380px;
+  right: -6vw;
+  width: min(40vw, 340px);
+  height: min(72vw, 600px);
+  opacity: 0.42;
+  transform: scaleX(-1) rotate(24deg);
+  animation: ambientFloat3 26s ease-in-out infinite alternate;
+}
+
+.bgRing4 {
+  top: 2150px;
+  left: -10vw;
+  width: min(48vw, 420px);
+  height: min(86vw, 740px);
+  opacity: 0.38;
+  transform: rotate(-12deg);
+  animation: ambientFloat4 34s ease-in-out infinite alternate;
+}
+
+@keyframes ambientFloat1 {
+  0% { transform: scaleX(-1) rotate(-8deg) translateY(0); }
+  100% { transform: scaleX(-1) rotate(-4deg) translateY(-22px); }
+}
+
+@keyframes ambientFloat2 {
+  0% { transform: rotate(16deg) translateY(0); }
+  100% { transform: rotate(20deg) translateY(24px); }
+}
+
+@keyframes ambientFloat3 {
+  0% { transform: scaleX(-1) rotate(24deg) translateY(0); }
+  100% { transform: scaleX(-1) rotate(19deg) translateY(-18px); }
+}
+
+@keyframes ambientFloat4 {
+  0% { transform: rotate(-12deg) translateY(0); }
+  100% { transform: rotate(-8deg) translateY(20px); }
+}
+
+.arcSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* =========================================================
+   CABECERA DE LA PÁGINA CON REVELACIÓN EDITORIAL
+   ========================================================= */
+.headerSection {
+  position: relative;
+  z-index: 3;
+  padding: 44px 36px 14px;
+  background: transparent;
+}
+
+.headerInner {
+  position: relative;
+  z-index: 1;
+  width: min(1320px, 100%);
+  margin: 0 auto;
+}
+
+.headerTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.titleMask {
+  overflow: hidden;
+  display: inline-block;
+  padding-bottom: 4px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(3.2rem, 7vw, 5.5rem);
+  font-weight: 800;
+  line-height: 0.88;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  animation: titleEntrance 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes titleEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(105%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.headerAccentLine {
+  margin-top: 14px;
+  width: 72px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-accent) 0%, rgba(255, 106, 0, 0.15) 100%);
+  transform-origin: left;
+  box-shadow: 0 0 14px rgba(255, 106, 0, 0.35);
+  animation: lineEntrance 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+  opacity: 0;
+}
+
+@keyframes lineEntrance {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* =========================================================
+   DIVISOR / TRANSICIÓN ENTRE CABECERA Y SECCIONES
+   ========================================================= */
+.sectionDivider {
+  position: relative;
+  width: min(1320px, calc(100% - 48px));
+  height: 1px;
+  margin: 18px auto 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 106, 0, 0.15) 15%,
+    rgba(255, 106, 0, 0.42) 50%,
+    rgba(255, 106, 0, 0.15) 85%,
+    transparent 100%
+  );
+  animation: dividerFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
+  opacity: 0;
+  z-index: 2;
+}
+
+.sectionDivider::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 25%;
+  right: 25%;
+  height: 17px;
+  background: radial-gradient(ellipse at center, rgba(255, 106, 0, 0.2) 0%, transparent 75%);
+  pointer-events: none;
+  filter: blur(6px);
+}
+
+@keyframes dividerFade {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.75);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* =========================================================
+   SECCIÓN DE 2 CARRUSELES EN SCROLL HORIZONTAL
+   ========================================================= */
+.carouselSection {
+  position: relative;
+  z-index: 3;
+  width: min(1360px, calc(100% - 24px));
+  margin: 32px auto 96px;
+}
+
+.carouselsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+}
+
+.carouselRow {
+  position: relative;
+  width: 100%;
+  opacity: 0;
+  animation: rowEntrance 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.carouselRowHorizontal {
+  animation-delay: 0.2s;
+}
+
+.carouselRowVertical {
+  animation-delay: 0.4s;
+}
+
+@keyframes rowEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================
+   PUENTE / TRANSICIÓN ENTRE FILAS (HORIZONTAL Y VERTICAL)
+   ========================================================= */
+.rowTransitionBridge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(1280px, 94%);
+  margin: 6px auto;
+  height: 18px;
+  opacity: 0;
+  animation: bridgeFade 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+}
+
+.rowBridgeGlow {
+  position: absolute;
+  width: 320px;
+  height: 18px;
+  background: radial-gradient(ellipse at center, rgba(255, 106, 0, 0.18) 0%, transparent 70%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.rowBridgeLine {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 106, 0, 0.08) 12%,
+    rgba(255, 106, 0, 0.3) 50%,
+    rgba(255, 106, 0, 0.08) 88%,
+    transparent 100%
+  );
+}
+
+@keyframes bridgeFade {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* =========================================================
+   TRACK DEL CARRUSEL (DESPLAZAMIENTO FLUIDO CON MÁSCARA LATERAL)
+   ========================================================= */
+.carouselTrackWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.carouselTrack {
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  gap: 22px;
+  padding: 10px 18px 20px;
+  width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  contain: layout style;
+}
+
+.carouselTrack::-webkit-scrollbar {
+  display: none;
+}
+
+/* =========================================================
+   BOTONES DE NAVEGACIÓN (FLECHAS OFICIALES CON MICRO-MOTION)
+   ========================================================= */
+.navArrow {
+  position: absolute;
+  top: 38%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: 
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.28s ease;
+  user-select: none;
+}
+
+.chevronIcon {
+  width: 22px;
+  height: 22px;
+  color: currentColor;
+  display: block;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navArrow:hover {
+  background: #ffffff;
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16), 0 0 14px rgba(255, 106, 0, 0.28);
+  border-color: rgba(255, 106, 0, 0.35);
+  color: var(--color-accent);
+}
+
+.navArrow:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+.navArrowLeft {
+  left: -10px;
+}
+
+.navArrowLeft:hover .chevronIcon {
+  transform: translateX(-2px);
+}
+
+.navArrowRight {
+  right: -10px;
+}
+
+.navArrowRight:hover .chevronIcon {
+  transform: translateX(2px);
+}
+
+/* =========================================================
+   INDICADOR DE POSICIÓN AGRUPADO (PUNTOS CON GLOW DINÁMICO)
+   ========================================================= */
+.dotsWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 14px;
+  width: 100%;
+}
+
+.dotsGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 106, 0, 0.18);
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 0 12px rgba(255, 106, 0, 0.08);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 106, 0, 0.25);
+  cursor: pointer;
+  transition: 
+    width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.3s ease;
+}
+
+.dot:hover {
+  background: rgba(255, 106, 0, 0.65);
+  transform: scale(1.2);
+}
+
+.dotActive {
+  width: 24px;
+  background: var(--color-accent);
+  box-shadow: 0 0 12px rgba(255, 106, 0, 0.5);
+}
+
+/* =========================================================
+   TARJETAS DEL CARRUSEL (2 FILAS CON FÍSICA CINEMATOGRÁFICA)
+   ========================================================= */
+.carouselCard {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  scroll-snap-align: start;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  content-visibility: auto;
+  contain-intrinsic-size: 320px 240px;
+}
+
+.carouselCard:hover {
+  transform: translateY(-5px);
+  will-change: transform;
+}
+
+/* Fila 1: Formato horizontal / paisaje */
+.carouselCardHorizontal {
+  width: clamp(270px, 28vw, 340px);
+  contain-intrinsic-size: 320px 240px;
+}
+
+/* Fila 2: Formato vertical / móvil */
+.carouselCardVertical {
+  width: clamp(180px, 18vw, 230px);
+  contain-intrinsic-size: 220px 330px;
+}
+
+/* =========================================================
+   SUPERFICIES DE FOTOGRAFÍA (HORIZONTAL vs VERTICAL)
+   ========================================================= */
+.photoSurface {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 8px 22px -6px rgba(18, 18, 18, 0.09);
+  cursor: pointer;
+  background: #000;
+  transition: 
+    box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.photoSurfaceHorizontal {
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+}
+
+.photoSurfaceVertical {
+  aspect-ratio: 9 / 14;
+  border-radius: 16px;
+}
+
+.carouselCard:hover .photoSurface {
+  box-shadow: 
+    0 20px 42px -8px rgba(18, 18, 18, 0.18),
+    0 0 22px rgba(255, 106, 0, 0.18);
+}
+
+.collageImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.carouselCard:hover .collageImage {
+  transform: scale(1.04);
+  will-change: transform;
+}
+
+/* BADGE EDITORIAL FLOTANTE */
+.photoIndexBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(18, 18, 18, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-family: var(--font-display), monospace, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+/* AFFORDANCE ZOOM AL PASAR EL CURSOR */
+.zoomAffordance {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(18, 18, 18, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.82);
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.carouselCard:hover .zoomAffordance {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* =========================================================
+   TEXTO Y BOTÓN DE LA FOTO (COMPACTO Y EDITORIAL)
+   ========================================================= */
+.photoCaption {
+  margin-top: 10px;
+  padding: 0 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.captionText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.captionTitle {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.captionDesc {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.captionButtonWrap {
+  margin-top: 4px;
+}
+
+/* BOTÓN DE ACCIÓN PERSONALIZADO */
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  box-shadow: 0 3px 12px rgba(255, 106, 0, 0.26);
+  transition: 
+    background-color 0.25s ease,
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease;
+  width: fit-content;
+}
+
+.actionButton:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(255, 106, 0, 0.36);
+}
+
+.buttonArrow {
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.actionButton:hover .buttonArrow {
+  transform: translateX(3px);
+}
+
+/* =========================================================
+   ESTADO VACÍO
+   ========================================================= */
+.emptyState {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px dashed var(--color-border);
+  border-radius: 20px;
+  padding: 60px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+  animation: rowEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.emptyTitle {
+  margin: 16px 0 8px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.emptySubtitle {
+  margin: 0 0 24px;
+  max-width: 440px;
+  font-size: 0.96rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+/* =========================================================
+   LIGHTBOX MODAL CINEMATOGRÁFICO
+   ========================================================= */
+.lightboxOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(6, 8, 14, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lightboxClose {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10001;
+}
+
+.lightboxClose:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  transform: rotate(90deg) scale(1.08);
+}
+
+.lightboxContent {
+  position: relative;
+  max-width: min(1140px, 94vw);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10000;
+  animation: scaleIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lightboxImage {
+  max-width: 100%;
+  max-height: 74vh;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 106, 0, 0.18);
+  display: block;
+}
+
+.lightboxFooter {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  color: #ffffff;
+  flex-wrap: wrap;
+}
+
+.lightboxText {
+  flex: 1;
+  min-width: 260px;
+}
+
+.lightboxTitle {
+  margin: 0 0 6px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.lightboxDesc {
+  margin: 0;
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.55;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+@media (max-width: 990px) {
+  .headerSection {
+    padding: 32px 20px 14px;
+  }
+
+  .carouselSection {
+    width: min(100% - 20px, 1360px);
+    margin-bottom: 72px;
+  }
+
+  .carouselTrack {
+    padding-left: 12px;
+    padding-right: 12px;
+    mask-image: linear-gradient(to right, transparent 0px, black 20px, black calc(100% - 20px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0px, black 20px, black calc(100% - 20px), transparent 100%);
+  }
+
+  .carouselCardHorizontal {
+    width: 280px;
+  }
+
+  .carouselCardVertical {
+    width: 190px;
+  }
+
+  .lightboxFooter {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .navArrow {
+    display: none;
+  }
+
+  .carouselTrack {
+    gap: 16px;
+    padding: 8px 8px 14px;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .carouselCardHorizontal {
+    width: 240px;
+  }
+
+  .carouselCardVertical {
+    width: 165px;
+  }
+}

@@ -1,0 +1,508 @@
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #fff;
+  background: #020408;
+  font-family: var(--font-body), "Poppins", sans-serif;
+  user-select: none;
+}
+
+.exiting {
+  pointer-events: none;
+  animation: splashExit 0.95s cubic-bezier(0.2, 0.85, 0.25, 1) forwards;
+}
+
+.exiting .inner {
+  animation: splashInnerExit 0.85s cubic-bezier(0.2, 0.85, 0.25, 1) forwards;
+}
+
+.exiting .bgImage {
+  animation: bgExit 0.95s cubic-bezier(0.2, 0.85, 0.25, 1) forwards;
+}
+
+/* =========================================
+   STAGE & EPIC BACKGROUND
+========================================= */
+
+.stage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bgImage {
+  object-fit: cover;
+  object-position: center 32%;
+  transform: scale(1.08);
+  filter: saturate(1.15) contrast(1.2) brightness(0.48);
+  opacity: 0.42;
+  animation: kenBurns 14s cubic-bezier(0.25, 1, 0.5, 1) infinite alternate;
+}
+
+/* Anamorphic cinematic streak across center */
+.anamorphicBeam {
+  position: absolute;
+  top: 50%;
+  left: -20%;
+  width: 140%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(43, 69, 255, 0.2) 20%,
+    rgba(255, 120, 30, 0.7) 46%,
+    rgba(255, 240, 210, 0.95) 50%,
+    rgba(255, 120, 30, 0.7) 54%,
+    rgba(43, 69, 255, 0.2) 80%,
+    transparent 100%
+  );
+  filter: blur(1.5px);
+  box-shadow:
+    0 0 20px 4px rgba(255, 110, 30, 0.4),
+    0 0 50px 10px rgba(255, 76, 20, 0.25);
+  animation: beamPulse 3.5s ease-in-out infinite alternate;
+  opacity: 0.85;
+}
+
+/* Atmospheric orange warm aura */
+.ambientGlowOrange {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(90vw, 680px);
+  height: min(90vw, 680px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 106, 0, 0.28) 0%,
+    rgba(255, 76, 20, 0.15) 35%,
+    rgba(255, 60, 0, 0.05) 55%,
+    transparent 70%
+  );
+  filter: blur(50px);
+  animation: ambientPulse 4.2s ease-in-out infinite alternate;
+}
+
+/* Atmospheric subtle electric blue fill on top */
+.ambientGlowBlue {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  width: min(75vw, 560px);
+  height: min(50vw, 360px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse,
+    rgba(43, 80, 255, 0.18) 0%,
+    rgba(43, 80, 255, 0.05) 45%,
+    transparent 70%
+  );
+  filter: blur(60px);
+  animation: ambientFloat 6s ease-in-out infinite alternate;
+}
+
+/* Subtle cinematic scanline / grain illusion */
+.shimmerLines {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 4px;
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+}
+
+/* Deep cinematic vignette */
+.vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 50%, rgba(2, 4, 8, 0.2) 0%, rgba(2, 4, 8, 0.75) 65%, #020408 100%),
+    linear-gradient(180deg, rgba(2, 4, 8, 0.65) 0%, transparent 25%, transparent 75%, rgba(2, 4, 8, 0.85) 100%);
+}
+
+/* =========================================
+   INNER CONTENT & BRAND LOCKUP
+========================================= */
+
+.inner {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 0 24px;
+  text-align: center;
+  animation: innerEntry 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.logoContainer {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 140px;
+  height: 140px;
+  margin-bottom: 4px;
+}
+
+.coreAura {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 130, 40, 0.85) 0%,
+    rgba(255, 80, 10, 0.4) 40%,
+    transparent 72%
+  );
+  filter: blur(18px);
+  animation: auraPulse 2.8s ease-in-out infinite alternate;
+}
+
+.radialPulse {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 140, 60, 0.3);
+  box-shadow:
+    0 0 25px rgba(255, 106, 0, 0.25),
+    inset 0 0 20px rgba(255, 106, 0, 0.15);
+  animation: pulseRing 3s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+}
+
+.logoWrapper {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.logo {
+  position: relative;
+  z-index: 2;
+  width: 90px !important;
+  height: auto !important;
+  max-width: 90px;
+  filter:
+    brightness(0) invert(1)
+    drop-shadow(0 0 12px rgba(255, 255, 255, 0.9))
+    drop-shadow(0 0 28px rgba(255, 110, 30, 0.75))
+    drop-shadow(0 0 65px rgba(255, 70, 0, 0.45));
+  animation: logoHeroEntrance 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, filter, opacity;
+}
+
+.brandLockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: textFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+.brandTitle {
+  margin: 0;
+  color: #ffffff;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2rem, 5.5vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  text-indent: 0.35em;
+  text-shadow:
+    0 2px 16px rgba(255, 255, 255, 0.3),
+    0 0 35px rgba(255, 110, 30, 0.45);
+}
+
+.brandTagline {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: clamp(0.68rem, 1.8vw, 0.78rem);
+  font-weight: 600;
+  letter-spacing: 0.46em;
+  text-transform: uppercase;
+  text-indent: 0.46em;
+}
+
+.loaderWrap {
+  position: relative;
+  width: 130px;
+  height: 2px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 14px rgba(255, 106, 0, 0.25);
+  animation: textFadeIn 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+}
+
+.loaderBar {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #ff5500 25%,
+    #fff2db 50%,
+    #ff6a00 75%,
+    transparent 100%
+  );
+  animation: loaderSweep 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.copy {
+  margin: 8px 0 0;
+  max-width: 28rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  animation: textFadeIn 0.8s ease both 0.2s;
+}
+
+/* =========================================
+   FAILED STATE
+========================================= */
+
+.failed .coreAura,
+.failed .radialPulse,
+.failed .anamorphicBeam,
+.failed .ambientGlowOrange {
+  animation: none;
+  opacity: 0.2;
+}
+
+.failed .logo {
+  animation: logoFailed 0.8s ease forwards;
+  filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(255, 80, 80, 0.4));
+}
+
+.failed .copy {
+  color: #ff9d88;
+}
+
+/* =========================================
+   KEYFRAME ANIMATIONS
+========================================= */
+
+@keyframes kenBurns {
+  0% {
+    transform: scale(1.08) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.18) translate3d(-1%, -1.5%, 0);
+  }
+}
+
+@keyframes beamPulse {
+  0% {
+    opacity: 0.6;
+    transform: translateY(-50%) scaleY(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-50%) scaleY(1.3);
+  }
+}
+
+@keyframes ambientPulse {
+  0% {
+    opacity: 0.65;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+@keyframes ambientFloat {
+  0% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) translateY(-10px);
+  }
+  100% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) translateY(12px);
+  }
+}
+
+@keyframes auraPulse {
+  0% {
+    opacity: 0.65;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes logoHeroEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+    filter:
+      brightness(0) invert(1)
+      drop-shadow(0 0 4px rgba(255, 255, 255, 0.2))
+      drop-shadow(0 0 10px rgba(255, 110, 30, 0.1));
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.06);
+    filter:
+      brightness(0) invert(1)
+      drop-shadow(0 0 14px rgba(255, 255, 255, 0.9))
+      drop-shadow(0 0 32px rgba(255, 110, 30, 0.8))
+      drop-shadow(0 0 70px rgba(255, 70, 0, 0.48));
+  }
+}
+
+@keyframes innerEntry {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes textFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loaderSweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes logoFailed {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Cinematic Exit Transitions */
+@keyframes splashExit {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes splashInnerExit {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.14);
+    filter: blur(8px);
+  }
+}
+
+@keyframes bgExit {
+  0% {
+    opacity: 0.42;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.24);
+  }
+}
+
+/* =========================================
+   ACCESSIBILITY & REDUCED MOTION
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .bgImage,
+  .anamorphicBeam,
+  .ambientGlowOrange,
+  .ambientGlowBlue,
+  .coreAura,
+  .radialPulse,
+  .logo,
+  .brandLockup,
+  .loaderWrap,
+  .loaderBar,
+  .copy,
+  .exiting,
+  .exiting .inner,
+  .exiting .bgImage {
+    animation: none !important;
+  }
+
+  .coreAura {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  .logo {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(0) invert(1) drop-shadow(0 0 20px rgba(255, 120, 40, 0.7));
+  }
+
+  .exiting {
+    opacity: 0;
+  }
+
+  .pageReveal,
+  .pageReveal > * {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}

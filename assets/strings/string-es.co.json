@@ -1,0 +1,66 @@
+{
+  "brand": {
+    "name": "El Genio",
+    "lockupLine1": "EL",
+    "lockupLine2": "GENIO",
+    "tagline": "Agencia creativa"
+  },
+  "nav": {
+    "ariaLabel": "Navegación principal",
+    "items": [
+      { "id": "inicio", "label": "Inicio", "href": "/" },
+      { "id": "servicios", "label": "Servicios", "href": "/servicios" },
+      { "id": "portafolio", "label": "Portafolio", "href": "/portafolio" },
+      { "id": "nosotros", "label": "Nosotros", "href": "/nosotros" },
+      { "id": "contacto", "label": "Contacto", "href": "/contacto" }
+    ]
+  },
+  "header": {
+    "keywords": ["Ideas", "Contenido", "Marcas", "Resultados"]
+  },
+  "whatsapp": {
+    "label": "Escribir por WhatsApp",
+    "message": "Hola El Genio, quiero información sobre un proyecto"
+  },
+  "hero": {
+    "kicker": ["Audiovisual", "Marketing", "Contenido"],
+    "kickerSeparator": "·",
+    "description": "En El Genio convertimos ideas en contenido que conecta, inspira y genera resultados.",
+    "primaryCta": "Inicia tu proyecto",
+    "primaryHref": "/contacto"
+  },
+  "aside": {
+    "creativity": ["Creatividad", "que mueve", "marcas"],
+    "handwritten": ["Más que video,", "es estrategia"],
+    "playCreateGrow": ["Play", "Create", "Grow"],
+    "established": "Est. 2020",
+    "studioCaption": ["El Genio", "Agencia creativa"],
+    "motionCaption": "Ideas en movimiento"
+  },
+  "media": {
+    "heroAlt": "Cámara de cine en un set de El Genio",
+    "portraitAlt": "Realizador de El Genio en set"
+  },
+  "pages": {
+    "servicios": {
+      "title": "Servicios",
+      "copy": "Sección en construcción."
+    },
+    "portafolio": {
+      "title": "Portafolio",
+      "copy": "Sección en construcción."
+    },
+    "nosotros": {
+      "title": "Nosotros",
+      "copy": "Sección en construcción."
+    },
+    "reel": {
+      "title": "Reel",
+      "copy": "Sección en construcción."
+    },
+    "contacto": {
+      "title": "Contacto",
+      "copy": "Cuéntanos tu idea. Respondemos rápido y con estrategia."
+    }
+  }
+}

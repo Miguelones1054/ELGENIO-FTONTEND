@@ -1,0 +1,308 @@
+.collage {
+  --media-slant: 14%;
+  --left-slant: 0.625;
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: 1;
+  width: 56%;
+  height: 100%;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.heroShot,
+.portrait {
+  pointer-events: auto;
+  overflow: hidden;
+  isolation: isolate;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.heroShot {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(var(--media-slant) 0, 100% 0, 100% 100%, calc(var(--media-slant) + 18%) 100%);
+  animation: mediaHeroIn 650ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+}
+
+@keyframes mediaHeroIn {
+  from {
+    opacity: 0;
+    transform: scale(1.03) translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+}
+
+.heroImage {
+  object-fit: cover;
+  object-position: 34% 40%;
+  transform: scale(1.04);
+}
+
+.mediaFill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.heroShade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, 0.08) 0%, transparent 28%),
+    linear-gradient(0deg, rgba(8, 10, 18, 0.28) 0%, transparent 38%);
+  pointer-events: none;
+}
+
+.portrait {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 74%;
+  height: 44%;
+  clip-path: polygon(0 100%, 37% 0, 68% 0, 90% 100%);
+  animation: mediaPortraitIn 680ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
+}
+
+@keyframes mediaPortraitIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.portraitImage {
+  object-fit: cover;
+  object-position: 58% 28%;
+  transform: scale(1.06);
+}
+
+.portraitShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 50%, rgba(8, 10, 18, 0.2) 100%);
+  pointer-events: none;
+}
+
+.portraitFinish {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: var(--color-background);
+  clip-path: polygon(38% 84%, 86% 84%, 78% 100%, 28% 100%);
+  pointer-events: none;
+}
+
+.badgeFill {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: var(--color-accent);
+  clip-path: polygon(86% 84%, 100% 84%, 100% 100%, 78% 100%);
+  pointer-events: none;
+}
+
+.note {
+  position: absolute;
+  right: 8%;
+  top: 26%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+
+.noteText {
+  margin: 0;
+  color: var(--color-inverse);
+  font-family: var(--font-script), cursive;
+  font-size: clamp(1.5rem, 2.2vw, 2.15rem);
+  font-weight: 600;
+  line-height: 1.02;
+  text-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+}
+
+.underline {
+  width: 168px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--color-accent);
+}
+
+.studioCaption,
+.motionCaption,
+.established {
+  position: absolute;
+  z-index: 5;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.studioCaption {
+  left: 8%;
+  bottom: 5%;
+  color: var(--color-inverse);
+  font-size: 0.58rem;
+  line-height: 1.4;
+  text-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+}
+
+.motionCaption {
+  left: 42%;
+  bottom: 7%;
+  color: var(--color-text-muted);
+  font-size: 0.58rem;
+}
+
+.established {
+  left: 58%;
+  bottom: 3%;
+  color: var(--color-text-muted);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+}
+
+.badge {
+  position: absolute;
+  right: 2.5%;
+  bottom: 2%;
+  z-index: 6;
+  margin: 0;
+  color: var(--color-inverse);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  text-align: right;
+  pointer-events: none;
+}
+
+@media (max-width: 980px) {
+  .collage {
+    inset: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .heroShot {
+    clip-path: none;
+  }
+
+  .heroImage {
+    object-fit: cover;
+    object-position: center 30%;
+    transform: none;
+  }
+
+  .heroShade {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(8, 10, 18, 0.42) 0%,
+        rgba(8, 10, 18, 0.12) 38%,
+        rgba(8, 10, 18, 0.55) 100%
+      );
+  }
+
+  .portrait,
+  .portraitFinish,
+  .badgeFill,
+  .studioCaption,
+  .motionCaption,
+  .established,
+  .badge {
+    display: none;
+  }
+
+  .note {
+    top: auto;
+    right: 6%;
+    bottom: 26%;
+    transform: rotate(-6deg);
+  }
+
+  .noteText {
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
+  }
+
+  .underline {
+    width: min(140px, 36vw);
+  }
+}
+
+@container landing (max-width: 980px) {
+  .collage {
+    inset: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .heroShot {
+    clip-path: none;
+  }
+
+  .heroImage {
+    object-fit: cover;
+    object-position: center 30%;
+    transform: none;
+  }
+
+  .heroShade {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(8, 10, 18, 0.42) 0%,
+        rgba(8, 10, 18, 0.12) 38%,
+        rgba(8, 10, 18, 0.55) 100%
+      );
+  }
+
+  .portrait,
+  .portraitFinish,
+  .badgeFill,
+  .studioCaption,
+  .motionCaption,
+  .established,
+  .badge {
+    display: none;
+  }
+
+  .note {
+    top: auto;
+    right: 6%;
+    bottom: 26%;
+    transform: rotate(-6deg);
+  }
+
+  .noteText {
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
+  }
+
+  .underline {
+    width: min(140px, 36vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroShot,
+  .portrait {
+    animation: none !important;
+  }
+}

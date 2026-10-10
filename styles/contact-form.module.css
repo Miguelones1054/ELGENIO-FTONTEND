@@ -1,0 +1,224 @@
+.card {
+  width: min(100%, 420px);
+  padding: 28px 28px 30px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(8, 10, 18, 0.88);
+}
+
+.form,
+.success {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title {
+  margin: 0 0 4px;
+  color: #fff;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.55rem, 2.4vw, 1.9rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.successCopy {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.field,
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.label {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.req {
+  color: #ff8a70;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 0.92rem;
+  box-sizing: border-box;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: 1px solid var(--color-accent, #ff6a00);
+  border-color: var(--color-accent, #ff6a00);
+}
+
+.inputError {
+  border-color: #ff6b6b;
+}
+
+.fieldHint {
+  color: #ff8a70;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.75) 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.75) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) calc(50% - 2px),
+    calc(100% - 11px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 32px;
+}
+
+.select option {
+  color: #121212;
+  background: #fff;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.45;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.radioRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+}
+
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.radio input {
+  accent-color: var(--color-accent, #ff6a00);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.primary {
+  background: var(--color-accent, #ff6a00);
+  color: #fff;
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--color-accent-hover, #e55f00);
+  transform: translateY(-1px);
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondary {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.secondary:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.arrow {
+  width: 14px;
+  height: 14px;
+}
+
+.error {
+  margin: 0;
+  color: #ff8a70;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 980px) {
+  .card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container page (max-width: 980px) {
+  .card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

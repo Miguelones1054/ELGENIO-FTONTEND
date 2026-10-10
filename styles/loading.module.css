@@ -1,0 +1,170 @@
+/* =========================================================
+   COMPONENTE CENTRALIZADO DE SPINNER Y OVERLAY DE CARGA
+   ========================================================= */
+
+/* Spinner independiente */
+.spinnerContainer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Tamaños */
+.sizeSmall {
+  width: 32px;
+  height: 32px;
+}
+
+.sizeMedium {
+  width: 52px;
+  height: 52px;
+}
+
+.sizeLarge {
+  width: 72px;
+  height: 72px;
+}
+
+/* Anillo exterior con gradiente naranja */
+.spinnerRing {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: #ff6a00;
+  border-right-color: #ff4c14;
+  animation: spinnerRotate 0.9s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 106, 0, 0.6));
+}
+
+.sizeSmall .spinnerRing {
+  border-width: 2px;
+}
+
+.sizeLarge .spinnerRing {
+  border-width: 4px;
+}
+
+/* Anillo interior con gradiente azul eléctrico */
+.spinnerInnerRing {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  border-bottom-color: #2b45ff;
+  border-left-color: #6b7cff;
+  animation: spinnerRotateReverse 1.2s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+  filter: drop-shadow(0 0 6px rgba(43, 69, 255, 0.5));
+}
+
+.sizeSmall .spinnerInnerRing {
+  inset: 4px;
+  border-width: 2px;
+}
+
+.sizeLarge .spinnerInnerRing {
+  inset: 9px;
+  border-width: 3.5px;
+}
+
+/* Núcleo brillante central */
+.spinnerCore {
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ffffff, 0 0 18px #ff6a00;
+  animation: corePulse 1.4s ease-in-out infinite alternate;
+}
+
+.sizeSmall .spinnerCore {
+  width: 5px;
+  height: 5px;
+}
+
+.sizeLarge .spinnerCore {
+  width: 12px;
+  height: 12px;
+}
+
+/* OVERLAY CON EFECTO BLUR */
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(4, 6, 14, 0.78);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  opacity: 1;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+  pointer-events: none;
+}
+
+.overlayFixed {
+  position: fixed;
+  z-index: 10000;
+}
+
+.roundedSm {
+  border-radius: 8px;
+}
+
+.roundedMd {
+  border-radius: 16px;
+}
+
+.roundedLg {
+  border-radius: 24px;
+}
+
+.loadingOverlayHidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loadingText {
+  font-family: var(--font-body), "Poppins", sans-serif;
+  font-size: 0.84rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* Keyframes de animación */
+@keyframes spinnerRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinnerRotateReverse {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes corePulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}

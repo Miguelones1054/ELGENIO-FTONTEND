@@ -1,0 +1,278 @@
+.section {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+  isolation: isolate;
+  background: transparent;
+}
+
+.sectionEmbedded {
+  height: auto;
+  min-height: 100%;
+  justify-content: flex-start;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.backdropImage {
+  object-fit: cover;
+  object-position: center 40%;
+  transform: scale(1.02);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.content {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: min(420px, 100%);
+  min-width: 0;
+  flex-shrink: 0;
+  padding: 28px 28px 30px;
+  border-radius: 16px;
+  background: rgba(8, 10, 18, 0.88);
+  animation: contactContentIn 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.layout {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  gap: 36px;
+  align-items: center;
+  width: min(1100px, 100%);
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 28px 36px 56px 48px;
+  box-sizing: border-box;
+}
+
+.formCol {
+  min-width: 0;
+  flex-shrink: 0;
+  animation: contactContentIn 820ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+}
+
+.intro {
+  max-width: 26rem;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.primaryAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: min(100%, 320px);
+  max-width: 100%;
+  padding: 0;
+  color: #fff;
+  text-decoration: none;
+  transition: transform 180ms ease;
+}
+
+.primaryAction:hover {
+  transform: translateX(4px);
+}
+
+.actionIcon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  color: #fff;
+}
+
+.actionGlyph {
+  width: 22px;
+  height: 22px;
+}
+
+.actionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.actionLabel {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.actionValue {
+  overflow: hidden;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.socialList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 160ms ease, transform 160ms ease;
+}
+
+.socialLink:hover {
+  color: var(--color-accent);
+  transform: translateX(3px);
+}
+
+.socialMuted {
+  opacity: 0.5;
+}
+
+.socialIcon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  display: block;
+  object-fit: contain;
+}
+
+.socialLabel {
+  line-height: 1.2;
+}
+
+.section :global([class*="hotspot"]) {
+  z-index: 20;
+}
+
+@keyframes contactContentIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    animation: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .section,
+  .sectionEmbedded {
+    justify-content: flex-start;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    width: 100%;
+    padding: 8px 16px 40px;
+  }
+
+  .content,
+  .formCol {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .content {
+    padding: 22px 18px 24px;
+  }
+
+  .intro {
+    font-size: clamp(1.2rem, 5.2vw, 1.55rem);
+  }
+
+  .primaryAction {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@container page (max-width: 980px) {
+  .section,
+  .sectionEmbedded {
+    justify-content: flex-start;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    width: 100%;
+    padding: 8px 16px 40px;
+  }
+
+  .content,
+  .formCol {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .content {
+    padding: 22px 18px 24px;
+  }
+
+  .intro {
+    font-size: clamp(1.2rem, 5.2vw, 1.55rem);
+  }
+
+  .primaryAction {
+    min-width: 0;
+    width: 100%;
+  }
+}
