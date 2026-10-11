@@ -3,17 +3,19 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { adminSignIn } from "@/lib/admin-auth";
-import { getAdminToken } from "@/lib/admin-session";
+import { getAdminToken, isSessionRemembered } from "@/lib/admin-session";
 import styles from "@/styles/admin.module.css";
 
 export function AdminLoginForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setRemember(isSessionRemembered());
     if (getAdminToken()) {
       router.replace("/administrative-content/dashboard");
     }
@@ -25,7 +27,7 @@ export function AdminLoginForm() {
     setLoading(true);
 
     try {
-      await adminSignIn(username, password);
+      await adminSignIn(username, password, remember);
       router.replace("/administrative-content/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo iniciar sesión");
@@ -90,6 +92,15 @@ export function AdminLoginForm() {
             {error ? <p className={styles.loginError}>{error}</p> : null}
 
             <div className={styles.loginActions}>
+              <label className={styles.loginRemember} htmlFor="admin-remember">
+                <input
+                  id="admin-remember"
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(event) => setRemember(event.target.checked)}
+                />
+                Recordar sesión
+              </label>
               <button className={styles.loginSubmit} type="submit" disabled={loading}>
                 Ingresar
               </button>

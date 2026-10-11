@@ -130,8 +130,26 @@
 
 .loginActions {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-top: 14px;
+}
+
+.loginRemember {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #333;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+
+.loginRemember input {
+  margin: 0;
+  accent-color: #2f5f9f;
 }
 
 .loginSubmit {
@@ -2294,6 +2312,84 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+}
+
+.portfolioMediaBlock {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.portfolioMediaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.portfolioMediaList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.portfolioMediaRow {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.portfolioMediaThumb,
+.portfolioMediaVideoMark {
+  width: 84px;
+  height: 56px;
+  object-fit: cover;
+  background: #0f172a;
+}
+
+.portfolioMediaVideoMark {
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.portfolioMediaMeta {
+  min-width: 0;
+}
+
+.portfolioMediaMeta strong {
+  display: block;
+  font-size: 0.82rem;
+}
+
+.portfolioMediaMeta span {
+  display: block;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portfolioMediaRowActions {
+  display: flex;
+  gap: 6px;
+}
+
+.portfolioAdminCategory {
+  margin: 0 0 6px;
+  color: #ff6a00;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .portfolioAdminCardTitle {

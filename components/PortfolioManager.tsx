@@ -3,29 +3,75 @@
 import { useEffect, useState, useRef, type ChangeEvent } from "react";
 import { apiFetch, apiUpload } from "@/lib/api";
 import { requireAdminToken } from "@/lib/admin-auth";
-import { useSiteConfig, type PortfolioItem } from "@/components/SiteConfigProvider";
+import { useSiteConfig, type PortfolioItem, type PortfolioMedia } from "@/components/SiteConfigProvider";
 import { resolveMediaUrl } from "@/lib/env";
 import { compressImageFile } from "@/lib/image-compress";
+import { collectionWorks } from "@/lib/portfolio";
+import strings from "@/assets/strings/string-es.co.json";
 import styles from "@/styles/admin.module.css";
+
+const pageCopy = strings.pages.portafolio;
+
+const portfolioCategories = pageCopy.categories;
+
+type CoverForm = {
+  imageUrl: string;
+  headline: string;
+  description: string;
+  badgeLine1: string;
+  badgeLine2: string;
+};
+
+const initialCover: CoverForm = {
+  imageUrl: "",
+  headline: pageCopy.headline,
+  description: pageCopy.copy,
+  badgeLine1: pageCopy.badge[0],
+  badgeLine2: pageCopy.badge[1],
+};
+
+type MediaDraft = {
+  id: string;
+  kind: "image" | "video";
+  url: string;
+  file?: File;
+  preview?: string;
+};
 
 type FormState = {
   id?: string;
+  category: string;
   title: string;
   description: string;
   imageUrl: string;
   hasButton: boolean;
   buttonText: string;
   buttonUrl: string;
+  media: MediaDraft[];
 };
 
 const initialForm: FormState = {
+  category: portfolioCategories[0],
   title: "",
   description: "",
   imageUrl: "",
   hasButton: false,
   buttonText: "Ver proyecto",
   buttonUrl: "",
+  media: [],
 };
+
+function draftId() {
+  return `media_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function draftsFromItem(item: PortfolioItem): MediaDraft[] {
+  return collectionWorks(item).map((piece) => ({
+    id: piece.id,
+    kind: piece.kind,
+    url: piece.url,
+  }));
+}
 
 export function PortfolioManager() {
   const { config, reload } = useSiteConfig();
@@ -44,7 +90,16 @@ export function PortfolioManager() {
   const [toast, setToast] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [optimizing, setOptimizing] = useState(false);
 
+  const [cover, setCover] = useState<CoverForm>(initialCover);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [savingCover, setSavingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const workImageRef = useRef<HTMLInputElement>(null);
+  const workVideoRef = useRef<HTMLInputElement>(null);
+  const [videoLink, setVideoLink] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -52,11 +107,25 @@ export function PortfolioManager() {
     async function loadPortfolio() {
       try {
         const token = requireAdminToken();
-        const data = await apiFetch<PortfolioItem[]>("/administrative-content/portfolio", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const [data, coverData] = await Promise.all([
+          apiFetch<PortfolioItem[]>("/administrative-content/portfolio", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          apiFetch<CoverForm>("/administrative-content/portfolio-cover", {
+            headers: { Authorization: `Bearer ${token}` },
+          }).catch(() => initialCover),
+        ]);
         if (!cancelled && Array.isArray(data)) {
           setItems(data);
+        }
+        if (!cancelled && coverData) {
+          setCover({
+            imageUrl: coverData.imageUrl || "",
+            headline: coverData.headline || initialCover.headline,
+            description: coverData.description || initialCover.description,
+            badgeLine1: coverData.badgeLine1 || initialCover.badgeLine1,
+            badgeLine2: coverData.badgeLine2 || initialCover.badgeLine2,
+          });
         }
       } catch (err) {
         if (!cancelled) {
@@ -76,6 +145,46 @@ export function PortfolioManager() {
     };
   }, [config?.portfolio]);
 
+  async function saveCover(event: React.FormEvent) {
+    event.preventDefault();
+    if (!coverFile && !cover.imageUrl) {
+      showToast("Sube la foto de la portada.", "error");
+      return;
+    }
+
+    setSavingCover(true);
+    try {
+      let imageUrl = cover.imageUrl;
+      if (coverFile) {
+        imageUrl = await uploadPortfolioFile(coverFile, "image");
+      }
+      const token = requireAdminToken();
+      const saved = await apiFetch<CoverForm>("/administrative-content/portfolio-cover", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...cover, imageUrl }),
+      });
+      setCover({
+        imageUrl: saved.imageUrl || imageUrl,
+        headline: saved.headline || cover.headline,
+        description: saved.description || cover.description,
+        badgeLine1: saved.badgeLine1 || cover.badgeLine1,
+        badgeLine2: saved.badgeLine2 || cover.badgeLine2,
+      });
+      setCoverFile(null);
+      setCoverPreview(null);
+      showToast("Portada actualizada.");
+      await reload();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "No se pudo guardar la portada", "error");
+    } finally {
+      setSavingCover(false);
+    }
+  }
+
   function showToast(text: string, type: "success" | "error" = "success") {
     setToast({ text, type });
     setTimeout(() => setToast(null), 4500);
@@ -94,12 +203,14 @@ export function PortfolioManager() {
     setEditingId(item.id);
     setForm({
       id: item.id,
+      category: item.category || "",
       title: item.title || "",
       description: item.description || "",
       imageUrl: item.imageUrl || "",
       hasButton: Boolean(item.hasButton),
       buttonText: item.buttonText || "Ver proyecto",
       buttonUrl: item.buttonUrl || "",
+      media: draftsFromItem(item),
     });
     setSelectedFile(null);
     setFilePreview(null);
@@ -113,6 +224,7 @@ export function PortfolioManager() {
     setForm(initialForm);
     setSelectedFile(null);
     setFilePreview(null);
+    setVideoLink("");
   }
 
   function handleFileSelect(e: ChangeEvent<HTMLInputElement>) {
@@ -132,37 +244,65 @@ export function PortfolioManager() {
     }
   }
 
+  async function uploadPortfolioFile(file: File, kind: "image" | "video"): Promise<string> {
+    const token = requireAdminToken();
+    const payload =
+      kind === "image"
+        ? await compressImageFile(file, { maxDimension: 2400, quality: 0.86 })
+        : file;
+    const formData = new FormData();
+    formData.append("file", payload);
+    formData.append("kind", kind);
+    const res = await apiUpload<{ url: string }>(
+      "/administrative-content/portfolio/upload",
+      formData,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    return res.url;
+  }
+
   async function uploadFileIfNeeded(): Promise<string> {
-    if (!selectedFile) {
-      return form.imageUrl;
-    }
+    if (!selectedFile) return form.imageUrl;
+    return uploadPortfolioFile(selectedFile, "image");
+  }
 
-    setUploading(true);
-    try {
-      const token = requireAdminToken();
-
-      // Comprimir automáticamente la foto antes de subir para máxima velocidad
-      const compressed = await compressImageFile(selectedFile, {
-        maxDimension: 2400,
-        quality: 0.86,
+  function addWorkFiles(files: FileList | null, kind: "image" | "video") {
+    if (!files?.length) return;
+    const next = [...form.media];
+    for (const file of Array.from(files)) {
+      next.push({
+        id: draftId(),
+        kind,
+        url: "",
+        file,
+        preview: URL.createObjectURL(file),
       });
-
-      const formData = new FormData();
-      formData.append("file", compressed);
-      if (form.imageUrl) {
-        formData.append("oldUrl", form.imageUrl);
-      }
-
-      const res = await apiUpload<{ url: string }>(
-        "/administrative-content/portfolio/upload",
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      return res.url;
-    } finally {
-      setUploading(false);
     }
+    setForm({ ...form, media: next });
+  }
+
+  function addVideoLink() {
+    const url = videoLink.trim();
+    if (!url) return;
+    setForm({
+      ...form,
+      media: [...form.media, { id: draftId(), kind: "video", url }],
+    });
+    setVideoLink("");
+  }
+
+  function removeWork(id: string) {
+    setForm({ ...form, media: form.media.filter((piece) => piece.id !== id) });
+  }
+
+  function moveWork(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= form.media.length) return;
+    const next = [...form.media];
+    const current = next[index];
+    next[index] = next[target];
+    next[target] = current;
+    setForm({ ...form, media: next });
   }
 
   async function handleOptimizeServerImages() {
@@ -198,8 +338,16 @@ export function PortfolioManager() {
   async function handleSaveItem(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!selectedFile && !form.imageUrl) {
-      showToast("Debes seleccionar una imagen para la foto del portafolio.", "error");
+    if (!form.title.trim()) {
+      showToast("Escribe el nombre de la marca o del proyecto.", "error");
+      return;
+    }
+    if (!selectedFile && !form.imageUrl && !form.media.some((piece) => piece.kind === "image" && (piece.file || piece.url))) {
+      showToast("La colección necesita una imagen de portada.", "error");
+      return;
+    }
+    if (form.media.length === 0) {
+      showToast("Agrega al menos una foto o un video del trabajo.", "error");
       return;
     }
 
@@ -207,19 +355,39 @@ export function PortfolioManager() {
     setToast(null);
 
     try {
-      // 1. Subir imagen si se seleccionó archivo nuevo
-      const finalImageUrl = await uploadFileIfNeeded();
+      setUploading(true);
+      const uploadedMedia: PortfolioMedia[] = [];
+      for (const piece of form.media) {
+        const url = piece.file ? await uploadPortfolioFile(piece.file, piece.kind) : piece.url.trim();
+        if (!url) continue;
+        uploadedMedia.push({ id: piece.id, kind: piece.kind, url });
+      }
+      if (uploadedMedia.length === 0) {
+        showToast("Agrega al menos una foto o un video del trabajo.", "error");
+        return;
+      }
 
-      // 2. Construir el nuevo item
+      let finalImageUrl = await uploadFileIfNeeded();
+      if (!finalImageUrl) {
+        finalImageUrl = uploadedMedia.find((piece) => piece.kind === "image")?.url || "";
+      }
+      if (!finalImageUrl) {
+        showToast("La colección necesita una imagen de portada.", "error");
+        return;
+      }
+
+      const previous = editingId ? items.find((item) => item.id === editingId) : undefined;
       const itemToSave: PortfolioItem = {
         id: editingId || `port_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        category: form.category.trim(),
         title: form.title.trim(),
         description: form.description.trim(),
         imageUrl: finalImageUrl,
+        media: uploadedMedia,
         hasButton: form.hasButton,
         buttonText: form.hasButton ? form.buttonText.trim() : "",
         buttonUrl: form.hasButton ? form.buttonUrl.trim() : "",
-        createdAt: new Date().toISOString(),
+        createdAt: previous?.createdAt || new Date().toISOString(),
       };
 
       let updatedList: PortfolioItem[];
@@ -244,7 +412,7 @@ export function PortfolioManager() {
       });
 
       setItems(res);
-      showToast(editingId ? "¡Foto actualizada con éxito!" : "¡Foto agregada al portafolio!");
+      showToast(editingId ? "Colección actualizada." : "Colección publicada.");
       closeForm();
       await reload();
     } catch (err) {
@@ -256,8 +424,8 @@ export function PortfolioManager() {
   }
 
   async function handleDeleteItem(item: PortfolioItem) {
-    const confirmName = item.title ? `"${item.title}"` : "esta foto";
-    if (!window.confirm(`¿Estás seguro de eliminar ${confirmName} del portafolio? Esta acción borrará el archivo del servidor.`)) {
+    const confirmName = item.title ? `"${item.title}"` : "esta colección";
+    if (!window.confirm(`¿Eliminar ${confirmName} y todos sus trabajos? Esta acción borra los archivos del servidor.`)) {
       return;
     }
 
@@ -278,7 +446,7 @@ export function PortfolioManager() {
       });
 
       setItems(res);
-      showToast("Foto eliminada del portafolio");
+      showToast("Colección eliminada");
       if (editingId === item.id) {
         closeForm();
       }
@@ -332,14 +500,13 @@ export function PortfolioManager() {
       <header className={styles.portfolioHeader}>
         <div>
           <div className={styles.portfolioTitleRow}>
-            <h2 className={styles.coverTitle}>Portafolio Fotográfico y Proyectos</h2>
+            <h2 className={styles.coverTitle}>Portafolio</h2>
             <span className={styles.portfolioCounterBadge}>
-              {items.length} {items.length === 1 ? "foto / proyecto" : "fotos / proyectos"}
+              {items.length} {items.length === 1 ? "colección" : "colecciones"}
             </span>
           </div>
           <p className={styles.coverDesc}>
-            Administra las fotos que se muestran en <code style={{ color: "#ff6a00" }}>/portafolio</code>.
-            Cada foto puede tener título, descripción y un botón de acción opcional con enlace personalizado.
+            La portada es la foto grande de arriba. Debajo se crean las colecciones de cada marca.
           </p>
         </div>
 
@@ -370,7 +537,7 @@ export function PortfolioManager() {
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              Agregar foto al portafolio
+              Nueva colección
             </button>
           </div>
         )}
@@ -384,11 +551,115 @@ export function PortfolioManager() {
       )}
 
       {/* FORMULARIO AGREGAR / EDITAR */}
+      <section className={styles.portfolioFormCard} aria-labelledby="coverTitle">
+        <form onSubmit={saveCover}>
+          <div className={styles.portfolioFormHeader}>
+            <h3 id="coverTitle" className={styles.portfolioFormTitle}>
+              Portada de la página
+            </h3>
+          </div>
+          <div className={styles.portfolioFormGrid}>
+            <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>Foto de portada</label>
+              <button
+                type="button"
+                className={styles.portfolioImageUploadPreview}
+                onClick={() => coverInputRef.current?.click()}
+              >
+                {coverPreview || cover.imageUrl ? (
+                  <img
+                    src={coverPreview || resolveMediaUrl(cover.imageUrl)}
+                    alt=""
+                    className={styles.portfolioPreviewImg}
+                  />
+                ) : (
+                  <span style={{ color: "#94a3b8", padding: 24 }}>Sube la foto de la portada</span>
+                )}
+                <span className={styles.portfolioUploadOverlay}>Cambiar foto</span>
+              </button>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  if (!file) return;
+                  setCoverPreview((current) => {
+                    if (current) URL.revokeObjectURL(current);
+                    return URL.createObjectURL(file);
+                  });
+                  setCoverFile(file);
+                }}
+              />
+            </div>
+            <div className={styles.portfolioFormDetails}>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel} htmlFor="cover-headline">
+                  Título
+                </label>
+                <input
+                  id="cover-headline"
+                  type="text"
+                  className={styles.textInput}
+                  value={cover.headline}
+                  onChange={(event) => setCover({ ...cover, headline: event.target.value })}
+                />
+              </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel} htmlFor="cover-description">
+                  Descripción
+                </label>
+                <textarea
+                  id="cover-description"
+                  className={styles.textInput}
+                  rows={3}
+                  value={cover.description}
+                  onChange={(event) => setCover({ ...cover, description: event.target.value })}
+                />
+              </div>
+              <div className={styles.portfolioButtonFields}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel} htmlFor="cover-badge-1">
+                    Sello, primera línea
+                  </label>
+                  <input
+                    id="cover-badge-1"
+                    type="text"
+                    className={styles.textInput}
+                    value={cover.badgeLine1}
+                    onChange={(event) => setCover({ ...cover, badgeLine1: event.target.value })}
+                  />
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel} htmlFor="cover-badge-2">
+                    Sello, segunda línea
+                  </label>
+                  <input
+                    id="cover-badge-2"
+                    type="text"
+                    className={styles.textInput}
+                    value={cover.badgeLine2}
+                    onChange={(event) => setCover({ ...cover, badgeLine2: event.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className={styles.portfolioFormActions}>
+            <button type="submit" className={styles.editorPrimary} disabled={savingCover}>
+              {savingCover ? "Guardando portada..." : "Guardar portada"}
+            </button>
+          </div>
+        </form>
+      </section>
+
       {formOpen && (
         <section className={styles.portfolioFormCard} aria-labelledby="formTitle">
           <div className={styles.portfolioFormHeader}>
             <h3 id="formTitle" className={styles.portfolioFormTitle}>
-              {editingId ? "Editar foto del portafolio" : "Nueva foto para el portafolio"}
+              {editingId ? "Editar colección" : "Nueva colección"}
             </h3>
             <button
               type="button"
@@ -405,7 +676,7 @@ export function PortfolioManager() {
               {/* COLUMNA IZQUIERDA: FOTO */}
               <div className={styles.fieldGroup}>
                 <label className={styles.fieldLabel}>
-                  Foto del proyecto <span style={{ color: "#ff6a00" }}>*</span>
+                  Portada de la colección <span style={{ color: "#ff6a00" }}>*</span>
                 </label>
 
                 <div
@@ -465,11 +736,32 @@ export function PortfolioManager() {
               {/* COLUMNA DERECHA: DATOS DEL PROYECTO */}
               <div className={styles.portfolioFormDetails}>
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>Título del proyecto / fotografía</label>
+                  <label className={styles.fieldLabel} htmlFor="portfolio-category">
+                    Categoría
+                  </label>
+                  <input
+                    id="portfolio-category"
+                    type="text"
+                    className={styles.textInput}
+                    list="portfolio-categories"
+                    placeholder="ej. Turismo"
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  />
+                  <datalist id="portfolio-categories">
+                    {portfolioCategories.map((category) => (
+                      <option key={category} value={category} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Marca o proyecto</label>
                   <input
                     type="text"
                     className={styles.textInput}
-                    placeholder="ej. Campaña Publicitaria 'Luz & Sombra'"
+                    placeholder="ej. Café Montaña"
+                    required
                     value={form.title}
                     onChange={(e) => setForm({ ...form, title: e.target.value })}
                   />
@@ -480,7 +772,7 @@ export function PortfolioManager() {
                   <textarea
                     className={styles.textInput}
                     rows={4}
-                    placeholder="Breve descripción del concepto, producción o resultado del trabajo..."
+                    placeholder="Qué se hizo para esta marca..."
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                   />
@@ -538,6 +830,103 @@ export function PortfolioManager() {
               </div>
             </div>
 
+            <div className={styles.portfolioMediaBlock}>
+              <label className={styles.fieldLabel}>Trabajos de la marca</label>
+              <p className={styles.toggleSubtitle}>
+                Estas fotos y videos se abren en carrusel al oprimir la tarjeta.
+              </p>
+              <div className={styles.portfolioMediaActions}>
+                <button type="button" className={styles.secondaryAction} onClick={() => workImageRef.current?.click()}>
+                  Agregar fotos
+                </button>
+                <button type="button" className={styles.secondaryAction} onClick={() => workVideoRef.current?.click()}>
+                  Agregar videos
+                </button>
+                <input
+                  ref={workImageRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+                  multiple
+                  hidden
+                  onChange={(event) => {
+                    addWorkFiles(event.target.files, "image");
+                    event.target.value = "";
+                  }}
+                />
+                <input
+                  ref={workVideoRef}
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                  multiple
+                  hidden
+                  onChange={(event) => {
+                    addWorkFiles(event.target.files, "video");
+                    event.target.value = "";
+                  }}
+                />
+              </div>
+              <div className={styles.portfolioMediaActions}>
+                <input
+                  type="url"
+                  className={styles.textInput}
+                  placeholder="O pega un enlace de YouTube o de un video"
+                  value={videoLink}
+                  onChange={(event) => setVideoLink(event.target.value)}
+                />
+                <button type="button" className={styles.secondaryAction} onClick={addVideoLink}>
+                  Agregar enlace
+                </button>
+              </div>
+
+              {form.media.length > 0 ? (
+                <div className={styles.portfolioMediaList}>
+                  {form.media.map((piece, index) => (
+                    <div key={piece.id} className={styles.portfolioMediaRow}>
+                      {piece.kind === "image" ? (
+                        <img
+                          src={piece.preview || resolveMediaUrl(piece.url)}
+                          alt=""
+                          className={styles.portfolioMediaThumb}
+                        />
+                      ) : (
+                        <div className={styles.portfolioMediaVideoMark}>Video</div>
+                      )}
+                      <div className={styles.portfolioMediaMeta}>
+                        <strong>{piece.kind === "video" ? "Video" : "Foto"} {index + 1}</strong>
+                        <span>{piece.file?.name || piece.url || "Pendiente de subir"}</span>
+                      </div>
+                      <div className={styles.portfolioMediaRowActions}>
+                        <button type="button" className={styles.portfolioOrderBtn} disabled={index === 0} onClick={() => moveWork(index, -1)} aria-label="Mover antes">
+                          ▲
+                        </button>
+                        <button type="button" className={styles.portfolioOrderBtn} disabled={index === form.media.length - 1} onClick={() => moveWork(index, 1)} aria-label="Mover después">
+                          ▼
+                        </button>
+                        {piece.kind === "image" && piece.url ? (
+                          <button
+                            type="button"
+                            className={styles.secondaryAction}
+                            onClick={() => {
+                              setSelectedFile(null);
+                              setFilePreview(null);
+                              setForm({ ...form, imageUrl: piece.url });
+                            }}
+                          >
+                            Portada
+                          </button>
+                        ) : null}
+                        <button type="button" className={styles.portfolioDeleteBtn} onClick={() => removeWork(piece.id)}>
+                          Quitar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className={styles.uploadHint}>Todavía no hay trabajos en esta colección.</p>
+              )}
+            </div>
+
             {/* BOTONES DE ACCIÓN DEL FORMULARIO */}
             <div className={styles.portfolioFormActions}>
               <button
@@ -546,12 +935,12 @@ export function PortfolioManager() {
                 disabled={saving || uploading}
               >
                 {uploading
-                  ? "Subiendo imagen al servidor…"
+                  ? "Subiendo trabajos…"
                   : saving
-                    ? "Guardando cambios…"
+                    ? "Guardando colección…"
                     : editingId
-                      ? "Actualizar foto"
-                      : "Publicar en portafolio"}
+                      ? "Actualizar colección"
+                      : "Publicar colección"}
               </button>
 
               <button
@@ -577,10 +966,10 @@ export function PortfolioManager() {
               <polyline points="21 15 16 10 5 21" />
             </svg>
             <h3 style={{ margin: "14px 0 6px", fontSize: "1.1rem", color: "#334155" }}>
-              Aún no has agregado fotos al portafolio
+              Aún no hay colecciones
             </h3>
             <p style={{ margin: 0, color: "#64748b", fontSize: "0.9rem" }}>
-              Haz clic en &quot;Agregar foto al portafolio&quot; para subir tu primera fotografía o proyecto.
+              Crea una colección por marca y agrega las fotos o videos de ese trabajo.
             </p>
             <button
               type="button"
@@ -588,7 +977,7 @@ export function PortfolioManager() {
               style={{ marginTop: 18 }}
               onClick={openCreateForm}
             >
-              + Agregar primera foto
+              + Nueva colección
             </button>
           </div>
         ) : (
@@ -611,13 +1000,16 @@ export function PortfolioManager() {
                 </div>
 
                 <div className={styles.portfolioAdminCardContent}>
+                  {item.category?.trim() ? (
+                    <p className={styles.portfolioAdminCategory}>{item.category}</p>
+                  ) : null}
                   <h4 className={styles.portfolioAdminCardTitle}>
                     {item.title || <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Sin título</span>}
                   </h4>
                   <p className={styles.portfolioAdminCardDesc}>
-                    {item.description || (
-                      <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Sin descripción</span>
-                    )}
+                    {collectionWorks(item).length}{" "}
+                    {collectionWorks(item).length === 1 ? "trabajo" : "trabajos"}
+                    {item.description ? ` · ${item.description}` : ""}
                   </p>
 
                   {item.hasButton && item.buttonText && (

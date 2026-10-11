@@ -1,4 +1,4 @@
-cd "/Users/haba/Desktop/Nodefex/Pages/El Genio"
+cd "/Users/juandakarol/Desktop/Proyectos/El genio"
 lsof -ti:8080 | xargs kill -9 2>/dev/null || true
 (cd backend && go run .) &
-cd elgenio && npm run dev
+cd ELGENIO-FTONTEND && npm run dev

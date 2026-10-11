@@ -48,7 +48,48 @@
     },
     "portafolio": {
       "title": "Portafolio",
-      "copy": "Sección en construcción."
+      "eyebrow": "Portafolio",
+      "headline": "Ideas que toman forma.",
+      "copy": "Producción audiovisual, fotografía y contenido para marcas que inspiran, conectan y generan resultados.",
+      "reelLabel": "Ver reel",
+      "reelHref": "/reel",
+      "badge": ["Más que video.", "Es estrategia"],
+      "filterLabel": "Filtrar por categoría",
+      "allLabel": "Todos",
+      "seeAllLabel": "Ver todos",
+      "categories": ["Comercial", "Turismo", "Inmobiliario", "Deportivo", "Eventos"],
+      "emptyTitle": "Próximamente más proyectos",
+      "emptyCopy": "Estamos actualizando la colección. Vuelve pronto o cuéntanos tu idea.",
+      "servicesEyebrow": "Nuestros servicios",
+      "servicesTitle": "Soluciones audiovisuales para cada proyecto.",
+      "servicesCopy": "Combinamos creatividad, tecnología y estrategia para crear contenido que impulse tu marca.",
+      "services": [
+        {
+          "title": "Producción de video",
+          "copy": "Comerciales, institucionales, promocionales y más."
+        },
+        {
+          "title": "Grabación con dron",
+          "copy": "Tomas aéreas para negocios, turismo, eventos y propiedades."
+        },
+        {
+          "title": "Fotografía profesional",
+          "copy": "Productos, espacios, eventos y marcas."
+        },
+        {
+          "title": "Edición y postproducción",
+          "copy": "Montaje, color, sonido y versiones para redes."
+        },
+        {
+          "title": "Contenido digital",
+          "copy": "Reels, TikToks y piezas adaptadas a cada plataforma."
+        }
+      ],
+      "ctaEyebrow": "Tu idea, nuestra producción",
+      "ctaTitle": "¿Tienes un proyecto en mente?",
+      "ctaButton": "Hablemos de tu proyecto",
+      "ctaHref": "/contacto",
+      "ctaTags": ["Audiovisual", "Dron", "Fotografía", "Marketing", "Contenido"]
     },
     "nosotros": {
       "title": "Nosotros",

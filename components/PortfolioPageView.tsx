@@ -1,285 +1,97 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { AccentShapes } from "@/components/AccentShapes";
 import { Icon } from "@/components/Icon";
 import { SiteHeader } from "@/components/SiteHeader";
-import { useSiteConfig, type PortfolioItem } from "@/components/SiteConfigProvider";
+import { useSiteConfig, type PortfolioItem, type PortfolioMedia } from "@/components/SiteConfigProvider";
 import { resolveMediaUrl } from "@/lib/env";
+import { collectionWorks } from "@/lib/portfolio";
+import { extractYouTubeId, getYouTubeEmbedUrl } from "@/lib/youtube";
 import strings from "@/assets/strings/string-es.co.json";
 import styles from "@/styles/portfolio.module.css";
+
+const page = strings.pages.portafolio;
+const ALL = page.allLabel;
 
 function isExternalLink(url: string) {
   return /^https?:\/\//i.test(url) || url.startsWith("//") || url.startsWith("mailto:") || url.startsWith("tel:");
 }
 
-type Orientation = "horizontal" | "vertical";
-
-const ORIENTATION_CACHE_KEY = "elgenio_portfolio_orientations";
-
-function getStoredOrientationCache(): Record<string, Orientation> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = sessionStorage.getItem(ORIENTATION_CACHE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function storeOrientationCache(map: Record<string, Orientation>) {
-  if (typeof window === "undefined") return;
-  try {
-    sessionStorage.setItem(ORIENTATION_CACHE_KEY, JSON.stringify(map));
-  } catch {
-    // ignorar excepciones de cuota en storage
-  }
+function cardSize(index: number) {
+  return index % 5 < 2 ? "wide" : "regular";
 }
 
 export function PortfolioPageView() {
   const { config } = useSiteConfig();
-  const [lightboxItem, setLightboxItem] = useState<PortfolioItem | null>(null);
-
-  // Inicializar orientación con caché síncrona para evitar saltos o re-renders
-  const [orientationMap, setOrientationMap] = useState<Record<string, Orientation>>(() => {
-    return getStoredOrientationCache();
-  });
-
-  const [landscapeActiveIndex, setLandscapeActiveIndex] = useState(0);
-  const [verticalActiveIndex, setVerticalActiveIndex] = useState(0);
+  const [filter, setFilter] = useState(ALL);
+  const [activeCollection, setActiveCollection] = useState<PortfolioItem | null>(null);
+  const [slide, setSlide] = useState(0);
 
   const items = useMemo(() => {
     return (config.portfolio || []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }, [config.portfolio]);
 
-  const landscapeTrackRef = useRef<HTMLDivElement>(null);
-  const verticalTrackRef = useRef<HTMLDivElement>(null);
+  const categories = useMemo(() => {
+    const known = new Set<string>(page.categories);
+    for (const item of items) {
+      const category = item.category?.trim();
+      if (category) known.add(category);
+    }
+    const extras = [...known].filter((category) => !page.categories.includes(category));
+    return [...page.categories, ...extras];
+  }, [items]);
 
-  // Detección en lote (batch) de orientación para elementos que aún no están en caché
+  const visibleItems = useMemo(() => {
+    if (filter === ALL) return items;
+    return items.filter((item) => item.category?.trim().toLowerCase() === filter.toLowerCase());
+  }, [filter, items]);
+
+  const cover = config.portfolioCover;
+  const heroImage = cover?.imageUrl
+    ? resolveMediaUrl(cover.imageUrl)
+    : items[0]?.imageUrl
+      ? resolveMediaUrl(items[0].imageUrl)
+      : "";
+  const headline = cover?.headline?.trim() || page.headline;
+  const lead = cover?.description?.trim() || page.copy;
+  const badge = [cover?.badgeLine1?.trim() || page.badge[0], cover?.badgeLine2?.trim() || page.badge[1]];
+
+  const activeWorks = activeCollection ? collectionWorks(activeCollection) : [];
+
+  function openCollection(item: PortfolioItem) {
+    setActiveCollection(item);
+    setSlide(0);
+  }
+
+  function moveSlide(direction: -1 | 1) {
+    if (activeWorks.length < 2) return;
+    setSlide((current) => (current + direction + activeWorks.length) % activeWorks.length);
+  }
+
   useEffect(() => {
-    if (!items.length) return;
-    const missingItems = items.filter((item) => item.imageUrl && !orientationMap[item.id]);
-    if (!missingItems.length) return;
-
-    let cancelled = false;
-    const detected: Record<string, Orientation> = {};
-    let pendingCount = missingItems.length;
-
-    missingItems.forEach((item) => {
-      const img = new Image();
-      img.src = resolveMediaUrl(item.imageUrl);
-
-      const checkDim = () => {
-        if (cancelled) return;
-        const isVert = img.naturalHeight > img.naturalWidth * 1.05;
-        detected[item.id] = isVert ? "vertical" : "horizontal";
-        pendingCount -= 1;
-        if (pendingCount === 0) {
-          setOrientationMap((prev) => {
-            const next = { ...prev, ...detected };
-            storeOrientationCache(next);
-            return next;
-          });
-        }
-      };
-
-      if (img.complete && img.naturalWidth > 0) {
-        checkDim();
-      } else {
-        img.onload = checkDim;
-        img.onerror = () => {
-          if (cancelled) return;
-          detected[item.id] = "horizontal";
-          pendingCount -= 1;
-          if (pendingCount === 0) {
-            setOrientationMap((prev) => {
-              const next = { ...prev, ...detected };
-              storeOrientationCache(next);
-              return next;
-            });
-          }
-        };
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [items, orientationMap]);
-
-  // Clasificación en 2 conjuntos estables
-  const horizontalItems = useMemo(
-    () => items.filter((item) => orientationMap[item.id] !== "vertical"),
-    [items, orientationMap]
-  );
-  const verticalItems = useMemo(
-    () => items.filter((item) => orientationMap[item.id] === "vertical"),
-    [items, orientationMap]
-  );
-
-  // Función para desplazar horizontalmente con flechas
-  const scrollTrack = (ref: React.RefObject<HTMLDivElement | null>, offset: number) => {
-    if (ref.current) {
-      ref.current.scrollBy({ left: offset, behavior: "smooth" });
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setActiveCollection(null);
+      if (event.key === "ArrowRight") moveSlide(1);
+      if (event.key === "ArrowLeft") moveSlide(-1);
     }
-  };
 
-  // Detección de elemento activo en el scroll sin Layout Thrashing
-  const handleTrackScroll = (
-    ref: React.RefObject<HTMLDivElement | null>,
-    setIndex: React.Dispatch<React.SetStateAction<number>>,
-    defaultStep: number
-  ) => {
-    const el = ref.current;
-    if (!el) return;
-    const firstChild = el.firstElementChild as HTMLElement | null;
-    const cardStep = firstChild ? firstChild.offsetWidth + 22 : defaultStep;
-    const closestIndex = Math.max(0, Math.round(el.scrollLeft / cardStep));
-    setIndex((prev) => (prev !== closestIndex ? closestIndex : prev));
-  };
-
-  // Moverse directamente al elemento al hacer clic en un punto indicador
-  const scrollToItem = (
-    ref: React.RefObject<HTMLDivElement | null>,
-    index: number,
-    defaultStep: number
-  ) => {
-    const el = ref.current;
-    if (!el) return;
-    const children = el.children;
-    if (children[index]) {
-      (children[index] as HTMLElement).scrollIntoView({
-        behavior: "smooth",
-        inline: "start",
-        block: "nearest",
-      });
-    } else {
-      el.scrollTo({ left: index * defaultStep, behavior: "smooth" });
-    }
-  };
-
-  // Cerrar lightbox con tecla ESC
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setLightboxItem(null);
-      }
-    }
-    if (lightboxItem) {
+    if (activeCollection) {
       document.body.style.overflow = "hidden";
       window.addEventListener("keydown", handleKeyDown);
     } else {
       document.body.style.overflow = "";
     }
+
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [lightboxItem]);
-
-  function renderCard(item: PortfolioItem, index: number, isVertical: boolean) {
-    const resolvedUrl = resolveMediaUrl(item.imageUrl);
-    const hasBtn = Boolean(item.hasButton && item.buttonText?.trim() && item.buttonUrl?.trim());
-    const isExternal = hasBtn ? isExternalLink(item.buttonUrl!) : false;
-
-    return (
-      <article
-        key={item.id}
-        className={`${styles.carouselCard} ${isVertical ? styles.carouselCardVertical : styles.carouselCardHorizontal}`}
-      >
-        {/* Superficie de la fotografía */}
-        <div
-          className={`${styles.photoSurface} ${isVertical ? styles.photoSurfaceVertical : styles.photoSurfaceHorizontal}`}
-          onClick={() => setLightboxItem(item)}
-          role="button"
-          tabIndex={0}
-          aria-label={`Ver foto en pantalla completa: ${item.title || "Proyecto"}`}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setLightboxItem(item);
-            }
-          }}
-        >
-          <img
-            src={resolvedUrl}
-            alt={item.title || `Proyecto ${index + 1}`}
-            className={styles.collageImage}
-            loading={index < 2 ? "eager" : "lazy"}
-            decoding="async"
-            fetchPriority={index === 0 ? "high" : "low"}
-          />
-
-          {/* Micro-badge con número */}
-          <span className={styles.photoIndexBadge}>
-            {String(index + 1).padStart(2, "0")}
-          </span>
-
-          {/* Icono de zoom al pasar el cursor */}
-          <div className={styles.zoomAffordance} aria-hidden="true" title="Ampliar imagen">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-              <circle cx="11" cy="11" r="7" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              <line x1="11" y1="8" x2="11" y2="14" />
-              <line x1="8" y1="11" x2="14" y2="11" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Metadatos y llamada a la acción */}
-        {(item.title || item.description || hasBtn) && (
-          <div className={styles.photoCaption}>
-            <div className={styles.captionText}>
-              {item.title && <h2 className={styles.captionTitle}>{item.title}</h2>}
-              {item.description && <p className={styles.captionDesc}>{item.description}</p>}
-            </div>
-
-            {hasBtn && (
-              <div className={styles.captionButtonWrap}>
-                {isExternal ? (
-                  <a
-                    href={item.buttonUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.actionButton}
-                  >
-                    <span>{item.buttonText}</span>
-                    <span className={styles.buttonArrow} aria-hidden="true">↗</span>
-                  </a>
-                ) : (
-                  <Link href={item.buttonUrl!} className={styles.actionButton}>
-                    <span>{item.buttonText}</span>
-                    <span className={styles.buttonArrow} aria-hidden="true">→</span>
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </article>
-    );
-  }
+  }, [activeCollection, activeWorks.length]);
 
   return (
     <main className={styles.page}>
-      {/* FONDOS ORGÁNICOS CON ANILLOS SUAVES DE COLOR NARANJA */}
-      <div className={styles.pageBackdrop} aria-hidden="true">
-        <div className={`${styles.bgRing} ${styles.bgRing1}`}>
-          <Icon id="marks/hand-arc" className={styles.arcSvg} />
-        </div>
-        <div className={`${styles.bgRing} ${styles.bgRing2}`}>
-          <Icon id="marks/hand-arc" className={styles.arcSvg} />
-        </div>
-        <div className={`${styles.bgRing} ${styles.bgRing3}`}>
-          <Icon id="marks/hand-arc" className={styles.arcSvg} />
-        </div>
-        <div className={`${styles.bgRing} ${styles.bgRing4}`}>
-          <Icon id="marks/hand-arc" className={styles.arcSvg} />
-        </div>
-      </div>
-
-      <div className={styles.contentShell}>
+      <div className={styles.frame}>
         <SiteHeader
           brand={strings.brand}
           nav={strings.nav}
@@ -287,216 +99,378 @@ export function PortfolioPageView() {
           tone="page"
         />
 
-        {/* CABECERA */}
-        <section className={styles.headerSection} aria-label="Portafolio">
-          <AccentShapes variant="section" side="right" />
-          <div className={styles.headerInner}>
-            <div className={styles.headerTitleRow}>
-              <div className={styles.titleMask}>
-                <h1 className={styles.title}>Portafolio</h1>
-              </div>
+        <div className={styles.wrap}>
+        <section className={styles.hero} aria-labelledby="portfolio-title">
+          <div className={styles.heroVisual}>
+            {heroImage ? (
+              <img src={heroImage} alt="" className={styles.heroImage} />
+            ) : (
+              <div className={styles.heroFallback} />
+            )}
+            <div className={styles.heroFade} />
+            <div className={styles.heroCopy}>
+              <h1 id="portfolio-title" className={styles.headline}>
+                {headline}
+              </h1>
+              <p className={styles.lead}>{lead}</p>
+              <Link href={page.reelHref} className={styles.reelButton}>
+                <span className={styles.reelPlay} aria-hidden="true">
+                  <Icon id="actions/play" className={styles.reelPlayIcon} />
+                </span>
+                {page.reelLabel}
+              </Link>
             </div>
-            <div className={styles.headerAccentLine} />
+            <div className={styles.badge} aria-hidden="true">
+              <span>{badge[0]}</span>
+              <strong>{badge[1]}</strong>
+            </div>
           </div>
         </section>
 
-        {/* TRANSICIÓN AMBIENTAL ENTRE CABECERA Y CARRUSELES */}
-        <div className={styles.sectionDivider} aria-hidden="true" />
+        <section className={styles.collection} aria-label="Colección de portafolio">
+          <div className={styles.filters}>
+            <p className={styles.filterLabel}>{page.filterLabel}</p>
+            <div className={styles.filterPills} role="tablist" aria-label={page.filterLabel}>
+              <button
+                type="button"
+                className={filter === ALL ? styles.pillActive : styles.pill}
+                onClick={() => setFilter(ALL)}
+                aria-pressed={filter === ALL}
+              >
+                {ALL}
+              </button>
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  className={filter === category ? styles.pillActive : styles.pill}
+                  onClick={() => setFilter(category)}
+                  aria-pressed={filter === category}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+            <button type="button" className={styles.seeAll} onClick={() => setFilter(ALL)}>
+              {page.seeAllLabel}
+              <Icon id="actions/arrow-right" className={styles.seeAllIcon} />
+            </button>
+          </div>
 
-        {/* SECCIÓN CON 2 CAROUSELES EN SCROLL HORIZONTAL (2 FILAS) */}
-        <section className={styles.carouselSection} aria-label="Galería en dos carruseles">
-          {items.length === 0 ? (
+          {visibleItems.length === 0 ? (
             <div className={styles.emptyState}>
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-subtle)" strokeWidth="1.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <polyline points="21 15 16 10 5 21" />
-              </svg>
-              <h2 className={styles.emptyTitle}>Próximamente más proyectos</h2>
-              <p className={styles.emptySubtitle}>
-                Estamos actualizando la selección de nuestras piezas y producciones recientes. ¡Vuelve pronto o
-                contáctanos para ver más material exclusivo!
-              </p>
-              <Link href="/contacto" className={styles.actionButton}>
-                Cuéntanos tu proyecto
-                <span className={styles.buttonArrow}>→</span>
+              <h2 className={styles.emptyTitle}>{page.emptyTitle}</h2>
+              <p className={styles.emptyCopy}>{page.emptyCopy}</p>
+              <Link href={page.ctaHref} className={styles.ctaButton}>
+                {page.ctaButton}
+                <Icon id="actions/arrow-right" className={styles.ctaIcon} />
               </Link>
             </div>
           ) : (
-            <div className={styles.carouselsContainer}>
-              {/* FILA 1: PAISAJE / HORIZONTAL */}
-              {horizontalItems.length > 0 && (
-                <div className={`${styles.carouselRow} ${styles.carouselRowHorizontal}`}>
-                  <div className={styles.carouselTrackWrapper}>
-                    <button
-                      type="button"
-                      className={`${styles.navArrow} ${styles.navArrowLeft}`}
-                      onClick={() => scrollTrack(landscapeTrackRef, -460)}
-                      aria-label="Desplazar proyectos anteriores"
-                    >
-                      <Icon id="actions/chevron-left" className={styles.chevronIcon} />
-                    </button>
-
-                    <div
-                      ref={landscapeTrackRef}
-                      className={styles.carouselTrack}
-                      onScroll={() => handleTrackScroll(landscapeTrackRef, setLandscapeActiveIndex, 330)}
-                    >
-                      {horizontalItems.map((item, idx) => renderCard(item, idx, false))}
-                    </div>
-
-                    <button
-                      type="button"
-                      className={`${styles.navArrow} ${styles.navArrowRight}`}
-                      onClick={() => scrollTrack(landscapeTrackRef, 460)}
-                      aria-label="Desplazar siguientes proyectos"
-                    >
-                      <Icon id="actions/chevron-right" className={styles.chevronIcon} />
-                    </button>
-                  </div>
-
-                  {/* INDICADOR DE POSICIÓN AGRUPADO CON PUNTOS SUAVES NARANJAS */}
-                  {horizontalItems.length > 1 && (
-                    <div className={styles.dotsWrapper} aria-label="Indicador de posición de proyectos horizontales">
-                      <div className={styles.dotsGroup}>
-                        {horizontalItems.map((item, idx) => (
-                          <button
-                            key={item.id}
-                            type="button"
-                            className={`${styles.dot} ${idx === landscapeActiveIndex ? styles.dotActive : ""}`}
-                            onClick={() => scrollToItem(landscapeTrackRef, idx, 330)}
-                            aria-label={`Ir a proyecto horizontal ${idx + 1} de ${horizontalItems.length}`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* TRANSICIÓN FLUIDA ENTRE SECCIÓN HORIZONTAL Y VERTICAL */}
-              {horizontalItems.length > 0 && verticalItems.length > 0 && (
-                <div className={styles.rowTransitionBridge} aria-hidden="true">
-                  <div className={styles.rowBridgeGlow} />
-                  <div className={styles.rowBridgeLine} />
-                </div>
-              )}
-
-              {/* FILA 2: DIRECCIÓN VERTICAL / MÓVIL */}
-              {verticalItems.length > 0 && (
-                <div className={`${styles.carouselRow} ${styles.carouselRowVertical}`}>
-                  <div className={styles.carouselTrackWrapper}>
-                    <button
-                      type="button"
-                      className={`${styles.navArrow} ${styles.navArrowLeft}`}
-                      onClick={() => scrollTrack(verticalTrackRef, -380)}
-                      aria-label="Desplazar proyectos verticales anteriores"
-                    >
-                      <Icon id="actions/chevron-left" className={styles.chevronIcon} />
-                    </button>
-
-                    <div
-                      ref={verticalTrackRef}
-                      className={styles.carouselTrack}
-                      onScroll={() => handleTrackScroll(verticalTrackRef, setVerticalActiveIndex, 220)}
-                    >
-                      {verticalItems.map((item, idx) => renderCard(item, idx, true))}
-                    </div>
-
-                    <button
-                      type="button"
-                      className={`${styles.navArrow} ${styles.navArrowRight}`}
-                      onClick={() => scrollTrack(verticalTrackRef, 380)}
-                      aria-label="Desplazar siguientes proyectos verticales"
-                    >
-                      <Icon id="actions/chevron-right" className={styles.chevronIcon} />
-                    </button>
-                  </div>
-
-                  {/* INDICADOR DE POSICIÓN AGRUPADO CON PUNTOS SUAVES NARANJAS */}
-                  {verticalItems.length > 1 && (
-                    <div className={styles.dotsWrapper} aria-label="Indicador de posición de proyectos verticales">
-                      <div className={styles.dotsGroup}>
-                        {verticalItems.map((item, idx) => (
-                          <button
-                            key={item.id}
-                            type="button"
-                            className={`${styles.dot} ${idx === verticalActiveIndex ? styles.dotActive : ""}`}
-                            onClick={() => scrollToItem(verticalTrackRef, idx, 220)}
-                            aria-label={`Ir a proyecto vertical ${idx + 1} de ${verticalItems.length}`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+            <div className={styles.grid}>
+              {visibleItems.map((item, index) => (
+                <CollectionCard
+                  key={item.id}
+                  item={item}
+                  size={cardSize(index)}
+                  onOpen={() => openCollection(item)}
+                />
+              ))}
             </div>
           )}
         </section>
+
+        <section className={styles.services} aria-labelledby="services-title">
+          <div className={styles.servicesIntro}>
+            <div>
+              <h2 id="services-title" className={styles.servicesTitle}>
+                {page.servicesTitle}
+              </h2>
+            </div>
+            <p className={styles.servicesCopy}>{page.servicesCopy}</p>
+          </div>
+          <ul className={styles.serviceList}>
+            {page.services.map((service, index) => (
+              <li key={service.title} className={styles.serviceItem}>
+                <ServiceIcon index={index} />
+                <h3>{service.title}</h3>
+                <p>{service.copy}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className={styles.cta} aria-labelledby="portfolio-cta">
+          {heroImage ? <img src={heroImage} alt="" className={styles.ctaImage} /> : null}
+          <div className={styles.ctaShade} />
+          <div className={styles.ctaContent}>
+            <div>
+              <h2 id="portfolio-cta" className={styles.ctaTitle}>
+                {page.ctaTitle}
+              </h2>
+              <Link href={page.ctaHref} className={styles.ctaButton}>
+                {page.ctaButton}
+                <Icon id="actions/arrow-right" className={styles.ctaIcon} />
+              </Link>
+            </div>
+            <ul className={styles.ctaTags}>
+              {page.ctaTags.map((tag) => (
+                <li key={tag}>{tag}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+        </div>
       </div>
 
-      {/* LIGHTBOX MODAL EN ALTA DEFINICIÓN */}
-      {lightboxItem && (
-        <div
-          className={styles.lightboxOverlay}
-          onClick={() => setLightboxItem(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label={lightboxItem.title || "Visualizador de imagen"}
-        >
-          <button
-            type="button"
-            className={styles.lightboxClose}
-            onClick={() => setLightboxItem(null)}
-            aria-label="Cerrar imagen ampliada"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
+      {activeCollection ? (
+        <CollectionViewer
+          item={activeCollection}
+          works={activeWorks}
+          slide={slide}
+          onSlide={setSlide}
+          onClose={() => setActiveCollection(null)}
+        />
+      ) : null}
+    </main>
+  );
+}
 
-          <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
-            <img
-              src={resolveMediaUrl(lightboxItem.imageUrl)}
-              alt={lightboxItem.title || "Foto ampliada"}
-              className={styles.lightboxImage}
-              decoding="async"
-            />
+function CollectionCard({
+  item,
+  size,
+  onOpen,
+}: {
+  item: PortfolioItem;
+  size: "wide" | "regular";
+  onOpen: () => void;
+}) {
+  const title = item.title?.trim();
+  const category = item.category?.trim();
+  const description = item.description?.trim();
+  const works = collectionWorks(item);
 
-            {(lightboxItem.title || lightboxItem.description || (lightboxItem.hasButton && lightboxItem.buttonText)) && (
-              <div className={styles.lightboxFooter}>
-                <div className={styles.lightboxText}>
-                  {lightboxItem.title && <h3 className={styles.lightboxTitle}>{lightboxItem.title}</h3>}
-                  {lightboxItem.description && <p className={styles.lightboxDesc}>{lightboxItem.description}</p>}
-                </div>
+  return (
+    <article className={size === "wide" ? styles.cardWide : styles.card}>
+      <button
+        type="button"
+        className={styles.cardButton}
+        onClick={onOpen}
+        aria-label={title || category || "Ver proyecto"}
+      >
+        <img
+          src={resolveMediaUrl(item.imageUrl)}
+          alt={title || "Proyecto del portafolio"}
+          className={styles.cardImage}
+        />
+        <span className={styles.cardShade} />
+        <span className={styles.cardCopy}>
+          {category ? <span className={styles.cardCategory}>{category}</span> : null}
+          {title ? (
+            <span className={styles.cardTitle}>
+              {title}
+              <span aria-hidden="true"> →</span>
+            </span>
+          ) : null}
+          {description ? <span className={styles.cardDescription}>{description}</span> : null}
+          {works.length > 0 ? (
+            <span className={styles.cardCount}>
+              {works.length} {works.length === 1 ? "trabajo" : "trabajos"}
+            </span>
+          ) : null}
+        </span>
+        <span className={styles.playButton} aria-hidden="true">
+          <Icon id="actions/play" className={styles.playIcon} />
+        </span>
+      </button>
+    </article>
+  );
+}
 
-                {lightboxItem.hasButton && lightboxItem.buttonText && lightboxItem.buttonUrl && (
-                  <div>
-                    {isExternalLink(lightboxItem.buttonUrl) ? (
-                      <a
-                        href={lightboxItem.buttonUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.actionButton}
-                      >
-                        <span>{lightboxItem.buttonText}</span>
-                        <span className={styles.buttonArrow} aria-hidden="true">↗</span>
-                      </a>
-                    ) : (
-                      <Link href={lightboxItem.buttonUrl} className={styles.actionButton}>
-                        <span>{lightboxItem.buttonText}</span>
-                        <span className={styles.buttonArrow} aria-hidden="true">→</span>
-                      </Link>
-                    )}
-                  </div>
-                )}
-              </div>
+function CollectionViewer({
+  item,
+  works,
+  slide,
+  onSlide,
+  onClose,
+}: {
+  item: PortfolioItem;
+  works: PortfolioMedia[];
+  slide: number;
+  onSlide: (index: number) => void;
+  onClose: () => void;
+}) {
+  const current = works[slide];
+  const hasButton = Boolean(item.hasButton && item.buttonText?.trim() && item.buttonUrl?.trim());
+  const external = hasButton ? isExternalLink(item.buttonUrl!) : false;
+  const youtubeId = current?.kind === "video" ? extractYouTubeId(current.url) : null;
+  const youtubeEmbed = youtubeId ? getYouTubeEmbedUrl(current.url, true) : null;
+
+  return (
+    <div
+      className={styles.viewer}
+      role="dialog"
+      aria-modal="true"
+      aria-label={item.title || "Colección"}
+      onClick={onClose}
+    >
+      <button type="button" className={styles.lightboxClose} onClick={onClose} aria-label="Cerrar">
+        <Icon id="actions/x" className={styles.closeIcon} />
+      </button>
+      <div className={styles.viewerPanel} onClick={(event) => event.stopPropagation()}>
+        <div className={styles.viewerHead}>
+          <div>
+            {item.category?.trim() ? <p className={styles.lightboxCategory}>{item.category}</p> : null}
+            <h3 className={styles.lightboxTitle}>{item.title?.trim() || "Colección"}</h3>
+            {item.description?.trim() ? <p className={styles.lightboxDescription}>{item.description}</p> : null}
+          </div>
+          <p className={styles.viewerCount}>
+            {works.length === 0 ? "0" : slide + 1} / {works.length}
+          </p>
+        </div>
+
+        <div className={styles.viewerStage}>
+          {works.length > 1 ? (
+            <button type="button" className={styles.viewerArrow} onClick={() => onSlide((slide - 1 + works.length) % works.length)} aria-label="Trabajo anterior">
+              <Icon id="actions/chevron-left" className={styles.viewerArrowIcon} />
+            </button>
+          ) : null}
+
+          {current ? (
+            youtubeEmbed ? (
+              <iframe
+                key={current.id}
+                className={styles.viewerFrame}
+                src={youtubeEmbed}
+                title={item.title || "Video"}
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+              />
+            ) : current.kind === "video" ? (
+              <video
+                key={current.id}
+                className={styles.viewerMedia}
+                src={resolveMediaUrl(current.url)}
+                controls
+                autoPlay
+                playsInline
+              />
+            ) : (
+              <img
+                key={current.id}
+                className={styles.viewerMedia}
+                src={resolveMediaUrl(current.url)}
+                alt={item.title || "Trabajo"}
+              />
+            )
+          ) : (
+            <p className={styles.viewerEmpty}>Esta colección todavía no tiene trabajos.</p>
+          )}
+
+          {works.length > 1 ? (
+            <button type="button" className={`${styles.viewerArrow} ${styles.viewerArrowRight}`} onClick={() => onSlide((slide + 1) % works.length)} aria-label="Trabajo siguiente">
+              <Icon id="actions/chevron-right" className={styles.viewerArrowIcon} />
+            </button>
+          ) : null}
+        </div>
+
+        {works.length > 1 ? (
+          <div className={styles.viewerThumbs}>
+            {works.map((work, index) => {
+              const thumbYoutube = work.kind === "video" ? extractYouTubeId(work.url) : null;
+              return (
+                <button
+                  key={work.id}
+                  type="button"
+                  className={index === slide ? styles.thumbActive : styles.thumb}
+                  onClick={() => onSlide(index)}
+                  aria-label={`Trabajo ${index + 1}`}
+                >
+                  {work.kind === "image" ? (
+                    <img src={resolveMediaUrl(work.url)} alt="" />
+                  ) : thumbYoutube ? (
+                    <img src={`https://i.ytimg.com/vi/${thumbYoutube}/hqdefault.jpg`} alt="" />
+                  ) : (
+                    <span>Video</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {hasButton ? (
+          <div className={styles.viewerFooter}>
+            {external ? (
+              <a href={item.buttonUrl} target="_blank" rel="noopener noreferrer" className={styles.ctaButton}>
+                {item.buttonText}
+              </a>
+            ) : (
+              <Link href={item.buttonUrl!} className={styles.ctaButton}>
+                {item.buttonText}
+              </Link>
             )}
           </div>
-        </div>
-      )}
-    </main>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function ServiceIcon({ index }: { index: number }) {
+  const common = {
+    width: 28,
+    height: 28,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.6,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  if (index === 1) {
+    return (
+      <svg {...common}>
+        <path d="M12 19V9" />
+        <path d="M8 12h8" />
+        <path d="M7 9h10l-1.2 3.2a2 2 0 0 1-1.9 1.3H10a2 2 0 0 1-1.9-1.3L7 9Z" />
+        <circle cx="12" cy="6" r="1.4" />
+      </svg>
+    );
+  }
+  if (index === 2) {
+    return (
+      <svg {...common}>
+        <path d="M4 8h3l1.5-2h7L17 8h3v10H4V8Z" />
+        <circle cx="12" cy="13" r="3" />
+      </svg>
+    );
+  }
+  if (index === 3) {
+    return (
+      <svg {...common}>
+        <rect x="3" y="5" width="18" height="12" rx="2" />
+        <path d="M8 21h8" />
+        <path d="M12 17v4" />
+      </svg>
+    );
+  }
+  if (index === 4) {
+    return (
+      <svg {...common}>
+        <path d="M4 19V10" />
+        <path d="M10 19V5" />
+        <path d="M16 19v-7" />
+        <path d="M22 19H2" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <path d="m10 9 5 3-5 3V9Z" />
+    </svg>
   );
 }

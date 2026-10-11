@@ -15,10 +15,14 @@ type ValidateSignUserResponse = {
   username: string;
 };
 
-export async function adminSignIn(username: string, password: string): Promise<AdminSessionUser> {
+export async function adminSignIn(
+  username: string,
+  password: string,
+  remember: boolean,
+): Promise<AdminSessionUser> {
   const { token } = await apiFetch<SignInResponse>("/administrative-content/sign-in", {
     method: "POST",
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, password, remember }),
   });
 
   const profile = await apiFetch<ValidateSignUserResponse>("/validate-sign-user", {
@@ -33,7 +37,7 @@ export async function adminSignIn(username: string, password: string): Promise<A
     username: profile.username,
   };
 
-  setAdminSession(token, user);
+  setAdminSession(token, user, remember);
   return user;
 }
 

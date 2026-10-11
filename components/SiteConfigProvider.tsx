@@ -45,16 +45,32 @@ export type CoverVideo = {
   title?: string;
 };
 
+export type PortfolioMedia = {
+  id: string;
+  kind: "image" | "video";
+  url: string;
+};
+
 export type PortfolioItem = {
   id: string;
+  category?: string;
   title: string;
   description: string;
   imageUrl: string;
+  media?: PortfolioMedia[];
   hasButton: boolean;
   buttonText?: string;
   buttonUrl?: string;
   order?: number;
   createdAt?: string;
+};
+
+export type PortfolioCover = {
+  imageUrl: string;
+  headline?: string;
+  description?: string;
+  badgeLine1?: string;
+  badgeLine2?: string;
 };
 
 export type SiteConfig = {
@@ -72,6 +88,7 @@ export type SiteConfig = {
   };
   contactLinks?: ContactLinks;
   coverVideo?: CoverVideo;
+  portfolioCover?: PortfolioCover;
   portfolio?: PortfolioItem[];
 };
 

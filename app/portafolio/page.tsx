@@ -6,7 +6,7 @@ const page = strings.pages.portafolio;
 
 export const metadata: Metadata = {
   title: `${page.title} | ${strings.brand.name}`,
-  description: "Portafolio fotográfico y proyectos de El Genio Creativo.",
+  description: page.copy,
 };
 
 export default function PortafolioPage() {
