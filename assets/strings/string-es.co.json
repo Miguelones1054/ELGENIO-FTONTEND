@@ -49,7 +49,15 @@
   "pages": {
     "servicios": {
       "title": "Servicios",
-      "copy": "Sección en construcción."
+      "headline": "Encuentra el servicio que necesitas.",
+      "copy": "Describe lo que buscas y te mostramos los servicios del catálogo que coinciden.",
+      "searchLabel": "Qué necesitas",
+      "searchPlaceholder": "Describe el servicio, por ejemplo video para redes o toma con dron",
+      "empty": "Ningún servicio coincide con esa descripción.",
+      "loading": "Cargando servicios…",
+      "error": "No pudimos cargar el catálogo. Intenta de nuevo en un momento.",
+      "retry": "Reintentar",
+      "priceLabel": "Valor"
     },
     "portafolio": {
       "title": "Portafolio",
