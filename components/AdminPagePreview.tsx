@@ -33,10 +33,13 @@ export function AdminPagePreview() {
   const stageRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
   const aboutDraftRef = useRef(aboutDraft);
+  const previewPageRef = useRef(previewPage);
   const [scale, setScale] = useState(1);
   aboutDraftRef.current = aboutDraft;
+  previewPageRef.current = previewPage;
 
   function publishAboutDraft() {
+    if (previewPageRef.current !== "nosotros") return;
     frameRef.current?.contentWindow?.postMessage(
       { type: "about-draft", payload: aboutDraftRef.current },
       window.location.origin,
