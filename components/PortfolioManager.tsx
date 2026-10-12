@@ -17,17 +17,23 @@ const portfolioCategories = pageCopy.categories;
 type CoverForm = {
   imageUrl: string;
   headline: string;
+  headlineFontSize: number;
   description: string;
-  badgeLine1: string;
-  badgeLine2: string;
+  descriptionFontSize: number;
+  fadeWidth: number;
+  positionX: number;
+  positionY: number;
 };
 
 const initialCover: CoverForm = {
   imageUrl: "",
   headline: pageCopy.headline,
+  headlineFontSize: 46,
   description: pageCopy.copy,
-  badgeLine1: pageCopy.badge[0],
-  badgeLine2: pageCopy.badge[1],
+  descriptionFontSize: 16,
+  fadeWidth: 16,
+  positionX: 72,
+  positionY: 50,
 };
 
 type MediaDraft = {
@@ -95,8 +101,18 @@ export function PortfolioManager() {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [savingCover, setSavingCover] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const coverDragRef = useRef<{
+    startX: number;
+    startY: number;
+    initialX: number;
+    initialY: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const [coverDragging, setCoverDragging] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverLoaded = useRef(false);
   const workImageRef = useRef<HTMLInputElement>(null);
   const workVideoRef = useRef<HTMLInputElement>(null);
   const [videoLink, setVideoLink] = useState("");
@@ -113,18 +129,22 @@ export function PortfolioManager() {
           }),
           apiFetch<CoverForm>("/administrative-content/portfolio-cover", {
             headers: { Authorization: `Bearer ${token}` },
-          }).catch(() => initialCover),
+          }).catch(() => null),
         ]);
         if (!cancelled && Array.isArray(data)) {
           setItems(data);
         }
-        if (!cancelled && coverData) {
+        if (!cancelled && coverData && !coverLoaded.current) {
+          coverLoaded.current = true;
           setCover({
             imageUrl: coverData.imageUrl || "",
             headline: coverData.headline || initialCover.headline,
+            headlineFontSize: coverData.headlineFontSize || initialCover.headlineFontSize,
             description: coverData.description || initialCover.description,
-            badgeLine1: coverData.badgeLine1 || initialCover.badgeLine1,
-            badgeLine2: coverData.badgeLine2 || initialCover.badgeLine2,
+            descriptionFontSize: coverData.descriptionFontSize || initialCover.descriptionFontSize,
+            fadeWidth: coverData.fadeWidth ?? initialCover.fadeWidth,
+            positionX: typeof coverData.positionX === "number" ? coverData.positionX : initialCover.positionX,
+            positionY: typeof coverData.positionY === "number" ? coverData.positionY : initialCover.positionY,
           });
         }
       } catch (err) {
@@ -170,9 +190,12 @@ export function PortfolioManager() {
       setCover({
         imageUrl: saved.imageUrl || imageUrl,
         headline: saved.headline || cover.headline,
+        headlineFontSize: saved.headlineFontSize || cover.headlineFontSize,
         description: saved.description || cover.description,
-        badgeLine1: saved.badgeLine1 || cover.badgeLine1,
-        badgeLine2: saved.badgeLine2 || cover.badgeLine2,
+        descriptionFontSize: saved.descriptionFontSize || cover.descriptionFontSize,
+        fadeWidth: typeof saved.fadeWidth === "number" ? saved.fadeWidth : cover.fadeWidth,
+        positionX: typeof saved.positionX === "number" ? saved.positionX : cover.positionX,
+        positionY: typeof saved.positionY === "number" ? saved.positionY : cover.positionY,
       });
       setCoverFile(null);
       setCoverPreview(null);
@@ -486,6 +509,40 @@ export function PortfolioManager() {
     }
   }
 
+  function handleCoverPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (!coverPreview && !cover.imageUrl) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    coverDragRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      initialX: cover.positionX,
+      initialY: cover.positionY,
+      width: rect.width || 1,
+      height: rect.height || 1,
+    };
+    setCoverDragging(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handleCoverPointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    const drag = coverDragRef.current;
+    if (!drag) return;
+    const dx = ((event.clientX - drag.startX) / drag.width) * 100;
+    const dy = ((event.clientY - drag.startY) / drag.height) * 100;
+    const positionX = Math.round(Math.max(0, Math.min(100, drag.initialX - dx)));
+    const positionY = Math.round(Math.max(0, Math.min(100, drag.initialY - dy)));
+    setCover((current) => ({ ...current, positionX, positionY }));
+  }
+
+  function handleCoverPointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    if (!coverDragRef.current) return;
+    coverDragRef.current = null;
+    setCoverDragging(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
   if (loading) {
     return (
       <div className={styles.coverPanel}>
@@ -561,22 +618,43 @@ export function PortfolioManager() {
           <div className={styles.portfolioFormGrid}>
             <div className={styles.fieldGroup}>
               <label className={styles.fieldLabel}>Foto de portada</label>
-              <button
-                type="button"
-                className={styles.portfolioImageUploadPreview}
-                onClick={() => coverInputRef.current?.click()}
-              >
-                {coverPreview || cover.imageUrl ? (
+              {coverPreview || cover.imageUrl ? (
+                <div
+                  className={coverDragging ? styles.coverFrameDragging : styles.coverFrame}
+                  onPointerDown={handleCoverPointerDown}
+                  onPointerMove={handleCoverPointerMove}
+                  onPointerUp={handleCoverPointerUp}
+                  onPointerCancel={handleCoverPointerUp}
+                >
                   <img
                     src={coverPreview || resolveMediaUrl(cover.imageUrl)}
                     alt=""
-                    className={styles.portfolioPreviewImg}
+                    className={styles.coverFrameImage}
+                    style={{ objectPosition: `${cover.positionX}% ${cover.positionY}%` }}
+                    draggable={false}
                   />
-                ) : (
+                  <span className={styles.coverFrameHint}>
+                    {coverDragging ? "Soltar para dejar el encuadre" : "Mantén el clic y arrastra la foto"}
+                  </span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.portfolioImageUploadPreview}
+                  onClick={() => coverInputRef.current?.click()}
+                >
                   <span style={{ color: "#94a3b8", padding: 24 }}>Sube la foto de la portada</span>
-                )}
-                <span className={styles.portfolioUploadOverlay}>Cambiar foto</span>
-              </button>
+                </button>
+              )}
+              {coverPreview || cover.imageUrl ? (
+                <button
+                  type="button"
+                  className={styles.secondaryAction}
+                  onClick={() => coverInputRef.current?.click()}
+                >
+                  Cambiar foto
+                </button>
+              ) : null}
               <input
                 ref={coverInputRef}
                 type="file"
@@ -597,19 +675,36 @@ export function PortfolioManager() {
             <div className={styles.portfolioFormDetails}>
               <div className={styles.fieldGroup}>
                 <label className={styles.fieldLabel} htmlFor="cover-headline">
-                  Título
+                  Filas del título
                 </label>
-                <input
+                <textarea
                   id="cover-headline"
-                  type="text"
                   className={styles.textInput}
+                  rows={3}
                   value={cover.headline}
                   onChange={(event) => setCover({ ...cover, headline: event.target.value })}
+                />
+                <p className={styles.toggleSubtitle}>Cada línea es una fila del título.</p>
+              </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel} htmlFor="cover-headline-size">
+                  Tamaño del título: {cover.headlineFontSize}px
+                </label>
+                <input
+                  id="cover-headline-size"
+                  type="range"
+                  min={28}
+                  max={72}
+                  step={1}
+                  value={cover.headlineFontSize}
+                  onChange={(event) =>
+                    setCover({ ...cover, headlineFontSize: Number(event.target.value) })
+                  }
                 />
               </div>
               <div className={styles.fieldGroup}>
                 <label className={styles.fieldLabel} htmlFor="cover-description">
-                  Descripción
+                  Texto inferior
                 </label>
                 <textarea
                   id="cover-description"
@@ -619,31 +714,36 @@ export function PortfolioManager() {
                   onChange={(event) => setCover({ ...cover, description: event.target.value })}
                 />
               </div>
-              <div className={styles.portfolioButtonFields}>
-                <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel} htmlFor="cover-badge-1">
-                    Sello, primera línea
-                  </label>
-                  <input
-                    id="cover-badge-1"
-                    type="text"
-                    className={styles.textInput}
-                    value={cover.badgeLine1}
-                    onChange={(event) => setCover({ ...cover, badgeLine1: event.target.value })}
-                  />
-                </div>
-                <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel} htmlFor="cover-badge-2">
-                    Sello, segunda línea
-                  </label>
-                  <input
-                    id="cover-badge-2"
-                    type="text"
-                    className={styles.textInput}
-                    value={cover.badgeLine2}
-                    onChange={(event) => setCover({ ...cover, badgeLine2: event.target.value })}
-                  />
-                </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel} htmlFor="cover-description-size">
+                  Tamaño del texto inferior: {cover.descriptionFontSize}px
+                </label>
+                <input
+                  id="cover-description-size"
+                  type="range"
+                  min={12}
+                  max={32}
+                  step={1}
+                  value={cover.descriptionFontSize}
+                  onChange={(event) =>
+                    setCover({ ...cover, descriptionFontSize: Number(event.target.value) })
+                  }
+                />
+              </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel} htmlFor="cover-fade">
+                  Degradado blanco: {cover.fadeWidth}%
+                </label>
+                <input
+                  id="cover-fade"
+                  type="range"
+                  min={0}
+                  max={60}
+                  step={1}
+                  value={cover.fadeWidth}
+                  onChange={(event) => setCover({ ...cover, fadeWidth: Number(event.target.value) })}
+                />
+                <p className={styles.toggleSubtitle}>Qué tanto blanco cubre la foto desde la izquierda.</p>
               </div>
             </div>
           </div>

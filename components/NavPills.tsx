@@ -17,6 +17,7 @@ type NavPillsProps = {
   ariaLabel: string;
   items: NavItem[];
   inverted?: boolean;
+  variant?: "pill" | "plain";
 };
 
 function isActivePath(pathname: string, href: string) {
@@ -24,7 +25,7 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function NavPills({ ariaLabel, items, inverted = false }: NavPillsProps) {
+export function NavPills({ ariaLabel, items, inverted = false, variant = "pill" }: NavPillsProps) {
   const pathname = usePathname();
   const { targetHref } = useSectionTransition();
 
@@ -105,7 +106,9 @@ export function NavPills({ ariaLabel, items, inverted = false }: NavPillsProps) 
   return (
     <nav
       ref={navRef}
-      className={[styles.nav, inverted ? styles.inverted : ""].filter(Boolean).join(" ")}
+      className={[styles.nav, inverted ? styles.inverted : "", variant === "plain" ? styles.plain : ""]
+        .filter(Boolean)
+        .join(" ")}
       aria-label={ariaLabel}
       onMouseLeave={() => setHoverState((prev) => ({ ...prev, visible: false }))}
     >

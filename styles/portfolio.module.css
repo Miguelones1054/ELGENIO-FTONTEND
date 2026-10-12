@@ -35,7 +35,8 @@
 }
 
 .hero {
-  padding: 28px 0 18px;
+  width: 100%;
+  padding: 0 0 8px;
 }
 
 .heroCopy {
@@ -43,68 +44,71 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   justify-content: center;
-  width: min(540px, 54%);
-  min-height: 460px;
-  padding: 48px 20px 48px 48px;
+  width: min(520px, 46%);
+  min-height: 380px;
+  padding: 40px 24px 40px max(28px, calc((100cqi - 1180px) / 2));
 }
 
 .headline {
   margin: 0;
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(2.6rem, 6.2vw, 5.1rem);
+  font-size: var(--headline-size, clamp(2.7rem, 5vw, 4.5rem));
   font-weight: 800;
-  line-height: 0.88;
+  line-height: 0.86;
   letter-spacing: -0.03em;
   text-transform: uppercase;
+  white-space: pre-line;
+  max-width: 8em;
 }
 
 .lead {
-  max-width: 390px;
-  margin: 18px 0 26px;
-  color: #5c5c5c;
-  font-size: 1rem;
-  line-height: 1.55;
+  max-width: 340px;
+  margin: 16px 0 18px;
+  color: #6a6a6a;
+  font-size: var(--lead-size, 0.98rem);
+  line-height: 1.45;
 }
 
 .reelButton {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: 46px;
-  padding: 6px 18px 6px 8px;
-  border: 1px solid #d9d9d9;
-  border-radius: 999px;
-  background: #fff;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #1a1a1a;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1;
   text-decoration: none;
 }
 
 .reelButton:hover {
-  border-color: #bdbdbd;
+  color: #000;
 }
 
 .reelPlay {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1.5px solid #1a1a1a;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid currentColor;
   border-radius: 50%;
+  background: transparent;
 }
 
 .reelPlayIcon {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   margin-left: 1px;
 }
 
 .heroVisual {
   position: relative;
   overflow: hidden;
-  border-radius: 22px;
+  border-radius: 0;
   background: #ececec;
 }
 
@@ -125,41 +129,11 @@
   inset: 0;
   background: linear-gradient(
     90deg,
-    #fff 0%,
-    #fff 16%,
-    rgba(255, 255, 255, 0.94) 32%,
-    rgba(255, 255, 255, 0.62) 48%,
-    rgba(255, 255, 255, 0.18) 64%,
-    rgba(255, 255, 255, 0) 78%
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(255, 255, 255, 0.28) 6%,
+    rgba(255, 255, 255, 0) 16%
   );
   pointer-events: none;
-}
-
-.badge {
-  position: absolute;
-  z-index: 1;
-  right: 18px;
-  bottom: 28px;
-  display: grid;
-  place-items: center;
-  width: 132px;
-  height: 132px;
-  padding: 18px;
-  border: 1.5px solid var(--color-accent);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  line-height: 1.15;
-  backdrop-filter: blur(2px);
-}
-
-.badge span,
-.badge strong {
-  font-size: 0.68rem;
-  font-weight: 700;
 }
 
 .collection {
@@ -538,8 +512,8 @@
   display: flex;
   flex-direction: column;
   width: min(1080px, 100%);
-  max-height: calc(100vh - 48px);
-  overflow: auto;
+  max-height: calc(100svh - 32px);
+  overflow: hidden;
   border-radius: 18px;
   background: #111;
   color: #fff;
@@ -548,10 +522,10 @@
 .viewerHead,
 .viewerFooter {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 20px 0;
+  padding: 14px 18px 10px;
 }
 
 .viewerFooter {
@@ -569,20 +543,31 @@
 
 .viewerStage {
   position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 280px;
-  margin: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: min(70vh, 680px);
+  margin: 0 16px 14px;
   background: #000;
   border-radius: 14px;
+  overflow: hidden;
 }
 
-.viewerMedia,
-.viewerFrame {
-  width: 100%;
-  height: min(62vh, 620px);
-  border: 0;
+.viewerMedia {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 100%;
   object-fit: contain;
+  object-position: center center;
+}
+
+.viewerFrame {
+  display: block;
+  width: 100%;
+  height: min(56vh, 520px);
+  border: 0;
   background: #000;
 }
 
@@ -749,9 +734,9 @@
   }
 
   .heroCopy {
-    width: min(480px, 62%);
-    min-height: 420px;
-    padding: 36px 16px 36px 32px;
+    width: min(460px, 58%);
+    min-height: 320px;
+    padding: 28px 16px 28px 22px;
   }
 
   .filters {
@@ -777,7 +762,10 @@
     aspect-ratio: 3 / 2;
   }
 
-  .viewerMedia,
+  .viewerStage {
+    height: min(58vh, 520px);
+  }
+
   .viewerFrame {
     height: min(48vh, 520px);
   }
@@ -793,36 +781,18 @@
   }
 
   .heroCopy {
-    width: calc(100% - 28px);
-    min-height: 390px;
-    padding: 28px 18px 28px 22px;
+    width: calc(100% - 36px);
+    min-height: 280px;
+    padding: 24px 14px 24px 18px;
   }
 
   .headline {
-    font-size: clamp(2.15rem, 11vw, 2.8rem);
-  }
-
-  .heroFade {
-    background: linear-gradient(
-      90deg,
-      #fff 0%,
-      #fff 28%,
-      rgba(255, 255, 255, 0.92) 46%,
-      rgba(255, 255, 255, 0.45) 68%,
-      rgba(255, 255, 255, 0) 88%
-    );
+    font-size: var(--headline-size-mobile, clamp(2.15rem, 10vw, 2.8rem));
   }
 
   .lead {
     max-width: none;
-  }
-
-  .badge {
-    width: 96px;
-    height: 96px;
-    right: 12px;
-    bottom: 12px;
-    padding: 12px;
+    font-size: var(--lead-size-mobile, 0.95rem);
   }
 
   .filters {

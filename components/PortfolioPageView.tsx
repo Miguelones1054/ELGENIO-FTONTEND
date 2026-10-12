@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -55,7 +55,26 @@ export function PortfolioPageView() {
       : "";
   const headline = cover?.headline?.trim() || page.headline;
   const lead = cover?.description?.trim() || page.copy;
-  const badge = [cover?.badgeLine1?.trim() || page.badge[0], cover?.badgeLine2?.trim() || page.badge[1]];
+  const headlineSize = cover?.headlineFontSize && cover.headlineFontSize > 0 ? cover.headlineFontSize : 0;
+  const headlineStyle = headlineSize
+    ? ({
+        "--headline-size": `${headlineSize}px`,
+        "--headline-size-mobile": `${Math.max(22, Math.round(headlineSize * 0.68))}px`,
+      } as CSSProperties)
+    : undefined;
+  const leadSize = cover?.descriptionFontSize && cover.descriptionFontSize > 0 ? cover.descriptionFontSize : 0;
+  const leadStyle = leadSize
+    ? ({
+        "--lead-size": `${leadSize}px`,
+        "--lead-size-mobile": `${Math.max(13, Math.round(leadSize * 0.92))}px`,
+      } as CSSProperties)
+    : undefined;
+  const fadeWidth = cover?.fadeWidth ?? 16;
+  const fadeMid = Math.max(0, Math.round(fadeWidth * 0.4));
+  const fadeStyle = {
+    background: `linear-gradient(90deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.32) ${fadeMid}%, rgba(255, 255, 255, 0) ${fadeWidth}%)`,
+  };
+  const coverPosition = `${cover?.positionX ?? 72}% ${cover?.positionY ?? 50}%`;
 
   const activeWorks = activeCollection ? collectionWorks(activeCollection) : [];
 
@@ -99,20 +118,21 @@ export function PortfolioPageView() {
           tone="page"
         />
 
-        <div className={styles.wrap}>
         <section className={styles.hero} aria-labelledby="portfolio-title">
           <div className={styles.heroVisual}>
             {heroImage ? (
-              <img src={heroImage} alt="" className={styles.heroImage} />
+              <img src={heroImage} alt="" className={styles.heroImage} style={{ objectPosition: coverPosition }} />
             ) : (
               <div className={styles.heroFallback} />
             )}
-            <div className={styles.heroFade} />
+            <div className={styles.heroFade} style={fadeStyle} />
             <div className={styles.heroCopy}>
-              <h1 id="portfolio-title" className={styles.headline}>
+              <h1 id="portfolio-title" className={styles.headline} style={headlineStyle}>
                 {headline}
               </h1>
-              <p className={styles.lead}>{lead}</p>
+              <p className={styles.lead} style={leadStyle}>
+                {lead}
+              </p>
               <Link href={page.reelHref} className={styles.reelButton}>
                 <span className={styles.reelPlay} aria-hidden="true">
                   <Icon id="actions/play" className={styles.reelPlayIcon} />
@@ -120,13 +140,10 @@ export function PortfolioPageView() {
                 {page.reelLabel}
               </Link>
             </div>
-            <div className={styles.badge} aria-hidden="true">
-              <span>{badge[0]}</span>
-              <strong>{badge[1]}</strong>
-            </div>
           </div>
         </section>
 
+        <div className={styles.wrap}>
         <section className={styles.collection} aria-label="Colección de portafolio">
           <div className={styles.filters}>
             <p className={styles.filterLabel}>{page.filterLabel}</p>

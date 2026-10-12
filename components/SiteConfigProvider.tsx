@@ -68,7 +68,12 @@ export type PortfolioItem = {
 export type PortfolioCover = {
   imageUrl: string;
   headline?: string;
+  headlineFontSize?: number;
   description?: string;
+  descriptionFontSize?: number;
+  fadeWidth?: number;
+  positionX?: number;
+  positionY?: number;
   badgeLine1?: string;
   badgeLine2?: string;
 };
