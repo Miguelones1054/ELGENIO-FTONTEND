@@ -66,7 +66,7 @@
 .lead {
   max-width: 340px;
   margin: 16px 0 18px;
-  color: #6a6a6a;
+  color: #1a1a1a;
   font-size: var(--lead-size, 0.98rem);
   line-height: 1.45;
 }
@@ -502,9 +502,11 @@
   position: fixed;
   inset: 0;
   z-index: 40;
-  display: grid;
-  place-items: center;
-  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow: hidden;
   background: rgba(8, 8, 8, 0.88);
 }
 
@@ -512,6 +514,7 @@
   display: flex;
   flex-direction: column;
   width: min(1080px, 100%);
+  height: min(90svh, 820px);
   max-height: calc(100svh - 32px);
   overflow: hidden;
   border-radius: 18px;
@@ -522,6 +525,7 @@
 .viewerHead,
 .viewerFooter {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -543,30 +547,31 @@
 
 .viewerStage {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: min(70vh, 680px);
-  margin: 0 16px 14px;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 12px 12px;
   background: #000;
   border-radius: 14px;
   overflow: hidden;
 }
 
 .viewerMedia {
+  position: absolute;
+  inset: 0;
   display: block;
-  width: auto;
-  max-width: 100%;
-  height: auto;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  max-width: none;
   object-fit: contain;
   object-position: center center;
 }
 
 .viewerFrame {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
-  height: min(56vh, 520px);
+  height: 100%;
   border: 0;
   background: #000;
 }
@@ -606,9 +611,10 @@
 
 .viewerThumbs {
   display: flex;
+  flex: 0 0 auto;
   gap: 8px;
   overflow-x: auto;
-  padding: 0 20px 18px;
+  padding: 0 16px 14px;
 }
 
 .thumb,
@@ -723,6 +729,8 @@
 .lightboxDescription {
   margin: 8px 0 0;
   max-width: 560px;
+  max-height: 2.9em;
+  overflow: hidden;
   color: rgba(255, 255, 255, 0.82);
   font-size: 0.95rem;
   line-height: 1.45;
@@ -761,14 +769,6 @@
   .cardWide .cardButton {
     aspect-ratio: 3 / 2;
   }
-
-  .viewerStage {
-    height: min(58vh, 520px);
-  }
-
-  .viewerFrame {
-    height: min(48vh, 520px);
-  }
 }
 
 @media (max-width: 680px) {
@@ -782,8 +782,8 @@
 
   .heroCopy {
     width: calc(100% - 36px);
-    min-height: 280px;
-    padding: 24px 14px 24px 18px;
+    min-height: 168px;
+    padding: 14px 14px 12px 18px;
   }
 
   .headline {
