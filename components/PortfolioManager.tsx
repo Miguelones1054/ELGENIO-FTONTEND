@@ -101,6 +101,10 @@ export function PortfolioManager() {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [savingCover, setSavingCover] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const previewFrameRef = useRef<HTMLIFrameElement>(null);
+  const previewStageRef = useRef<HTMLDivElement>(null);
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const [previewScale, setPreviewScale] = useState(1);
   const coverDragRef = useRef<{
     startX: number;
     startY: number;
@@ -543,6 +547,91 @@ export function PortfolioManager() {
     }
   }
 
+  const previewWidth = previewMode === "mobile" ? 390 : 1280;
+  const previewHeight = previewMode === "mobile" ? 844 : 900;
+
+  function previewCollections(): PortfolioItem[] {
+    const published = items.map((item) => ({
+      ...item,
+      media: (item.media || []).map((piece) => ({
+        id: piece.id,
+        kind: piece.kind,
+        url: piece.url,
+      })),
+    }));
+    if (!formOpen) return published;
+
+    const draftItem: PortfolioItem = {
+      id: editingId || "borrador",
+      category: form.category,
+      title: form.title,
+      description: form.description,
+      imageUrl: filePreview || form.imageUrl,
+      media: form.media.map((piece) => ({
+        id: piece.id,
+        kind: piece.kind,
+        url: piece.preview || piece.url,
+      })),
+      hasButton: form.hasButton,
+      buttonText: form.buttonText,
+      buttonUrl: form.buttonUrl,
+      order: editingId ? published.find((item) => item.id === editingId)?.order ?? published.length : published.length,
+    };
+
+    if (editingId) {
+      return published.map((item) => (item.id === editingId ? draftItem : item));
+    }
+    return [...published, draftItem];
+  }
+
+  function pushPreview() {
+    const frame = previewFrameRef.current?.contentWindow;
+    if (!frame) return;
+    frame.postMessage(
+      {
+        type: "portfolio-draft",
+        payload: {
+          cover: {
+            imageUrl: coverPreview || cover.imageUrl,
+            headline: cover.headline,
+            headlineFontSize: cover.headlineFontSize,
+            description: cover.description,
+            descriptionFontSize: cover.descriptionFontSize,
+            fadeWidth: cover.fadeWidth,
+            positionX: cover.positionX,
+            positionY: cover.positionY,
+          },
+          items: previewCollections(),
+        },
+      },
+      window.location.origin,
+    );
+  }
+
+  useEffect(() => {
+    const stage = previewStageRef.current;
+    if (!stage) return;
+    const update = () => {
+      const available = stage.clientWidth;
+      setPreviewScale(available > 0 ? Math.min(1, available / previewWidth) : 1);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, [previewWidth, loading]);
+
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type !== "portfolio-preview-ready") return;
+      pushPreview();
+    }
+    window.addEventListener("message", onMessage);
+    pushPreview();
+    return () => window.removeEventListener("message", onMessage);
+  });
+
   if (loading) {
     return (
       <div className={styles.coverPanel}>
@@ -738,12 +827,12 @@ export function PortfolioManager() {
                   id="cover-fade"
                   type="range"
                   min={0}
-                  max={60}
+                  max={100}
                   step={1}
                   value={cover.fadeWidth}
                   onChange={(event) => setCover({ ...cover, fadeWidth: Number(event.target.value) })}
                 />
-                <p className={styles.toggleSubtitle}>Qué tanto blanco cubre la foto desde la izquierda.</p>
+                <p className={styles.toggleSubtitle}>Hasta dónde llega el blanco sobre la foto, desde la izquierda. 100% la cubre por completo.</p>
               </div>
             </div>
           </div>
@@ -1172,6 +1261,55 @@ export function PortfolioManager() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className={styles.portfolioPreview} aria-label="Vista previa de la página">
+        <div className={styles.portfolioPreviewHeader}>
+          <div>
+            <h2 className={styles.portfolioPreviewTitle}>Vista previa</h2>
+            <p className={styles.portfolioPreviewCopy}>
+              Así se verá la página con lo que está en esta pantalla, antes de guardarlo.
+            </p>
+          </div>
+          <div className={styles.viewportToggle} role="group" aria-label="Modo de vista previa">
+            <button
+              type="button"
+              className={[styles.viewportBtn, previewMode === "desktop" ? styles.viewportBtnActive : ""].filter(Boolean).join(" ")}
+              onClick={() => setPreviewMode("desktop")}
+            >
+              Escritorio
+            </button>
+            <button
+              type="button"
+              className={[styles.viewportBtn, previewMode === "mobile" ? styles.viewportBtnActive : ""].filter(Boolean).join(" ")}
+              onClick={() => setPreviewMode("mobile")}
+            >
+              Móvil
+            </button>
+          </div>
+        </div>
+        <div
+          ref={previewStageRef}
+          className={styles.portfolioPreviewStage}
+          style={{ height: Math.round(previewHeight * previewScale) }}
+        >
+          <div
+            className={styles.portfolioPreviewScaler}
+            style={{
+              width: previewWidth,
+              height: previewHeight,
+              transform: `scale(${previewScale})`,
+            }}
+          >
+            <iframe
+              ref={previewFrameRef}
+              className={styles.portfolioPreviewFrame}
+              title="Vista previa del portafolio"
+              src="/portafolio?vista=borrador"
+              style={{ width: previewWidth, height: previewHeight }}
+            />
+          </div>
+        </div>
       </section>
     </div>
   );

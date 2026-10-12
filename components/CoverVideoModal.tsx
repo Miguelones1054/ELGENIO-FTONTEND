@@ -32,7 +32,7 @@ function CoverVideoModalInner() {
   const isEnabled = Boolean(coverVideo?.enabled && hasValidVideo);
 
   useEffect(() => {
-    if (!ready || !isEnabled) {
+    if (!ready || !isEnabled || new URLSearchParams(window.location.search).get("vista") === "borrador") {
       setIsOpen(false);
       return;
     }

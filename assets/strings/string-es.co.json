@@ -20,14 +20,19 @@
   },
   "whatsapp": {
     "label": "Escribir por WhatsApp",
-    "message": "Hola El Genio, quiero información sobre un proyecto"
+    "message": "Hola El Genio, quiero información sobre un proyecto",
+    "promptTitle": "¿Quieres atención rápida?",
+    "promptCopy": "Envíanos un mensaje directo por WhatsApp y te respondemos en el momento.",
+    "promptButton": "Escribir por WhatsApp"
   },
   "hero": {
     "kicker": ["Audiovisual", "Marketing", "Contenido"],
     "kickerSeparator": "·",
     "description": "En El Genio convertimos ideas en contenido que conecta, inspira y genera resultados.",
-    "primaryCta": "Inicia tu proyecto",
-    "primaryHref": "/contacto"
+    "primaryCta": "Ve nuestro trabajo",
+    "primaryHref": "/portafolio",
+    "contactCta": "Contáctanos",
+    "contactHref": "/contacto"
   },
   "aside": {
     "creativity": ["Creatividad", "que mueve", "marcas"],
@@ -93,7 +98,8 @@
     },
     "nosotros": {
       "title": "Nosotros",
-      "copy": "Sección en construcción."
+      "headline": "El equipo detrás de las ideas.",
+      "copy": "Somos una agencia creativa y productora audiovisual. Cada proyecto nace de una idea y se construye en equipo."
     },
     "reel": {
       "title": "Reel",

@@ -8,9 +8,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import type { AboutPage } from "@/components/SiteConfigProvider";
 
 export type PreviewViewport = "desktop" | "mobile";
-export type PreviewPage = "inicio" | "contacto";
+export type PreviewPage = "inicio" | "portafolio" | "nosotros" | "contacto";
 
 export type CollagePosition = { x: number; y: number };
 
@@ -30,6 +31,8 @@ type AdminEditorContextValue = {
   editingId: EditableBlockId | null;
   collageLivePosition: { hero?: CollagePosition; portrait?: CollagePosition };
   setCollageLivePosition: (slot: "hero" | "portrait", pos: CollagePosition | null) => void;
+  aboutDraft: AboutPage | null;
+  setAboutDraft: (page: AboutPage | null) => void;
   select: (id: EditableBlockId | null) => void;
   startEdit: (id?: EditableBlockId) => void;
   closeEdit: () => void;
@@ -72,6 +75,7 @@ export function AdminEditorProvider({ children }: { children: ReactNode }) {
     hero?: CollagePosition;
     portrait?: CollagePosition;
   }>({});
+  const [aboutDraft, setAboutDraft] = useState<AboutPage | null>(null);
 
   const setCollageLivePosition = useCallback((slot: "hero" | "portrait", pos: CollagePosition | null) => {
     setCollageLivePositionState((prev) => {
@@ -131,6 +135,8 @@ export function AdminEditorProvider({ children }: { children: ReactNode }) {
       editingId,
       collageLivePosition,
       setCollageLivePosition,
+      aboutDraft,
+      setAboutDraft,
       select,
       startEdit,
       closeEdit,
@@ -144,6 +150,7 @@ export function AdminEditorProvider({ children }: { children: ReactNode }) {
       editingId,
       collageLivePosition,
       setCollageLivePosition,
+      aboutDraft,
       select,
       startEdit,
       closeEdit,

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AboutManager } from "@/components/AboutManager";
 import { AdminEditDrawer } from "@/components/AdminEditDrawer";
 import { AdminEditorProvider, useAdminEditor } from "@/components/AdminEditorContext";
 import { AdminPagePreview } from "@/components/AdminPagePreview";
@@ -117,6 +118,30 @@ function EditorChrome({
                 <button
                   className={[
                     styles.viewportBtn,
+                    previewPage === "portafolio" ? styles.viewportBtnActive : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  type="button"
+                  onClick={() => setPreviewPage("portafolio")}
+                >
+                  Portafolio
+                </button>
+                <button
+                  className={[
+                    styles.viewportBtn,
+                    previewPage === "nosotros" ? styles.viewportBtnActive : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  type="button"
+                  onClick={() => setPreviewPage("nosotros")}
+                >
+                  Nosotros
+                </button>
+                <button
+                  className={[
+                    styles.viewportBtn,
                     previewPage === "contacto" ? styles.viewportBtnActive : "",
                   ]
                     .filter(Boolean)
@@ -162,8 +187,12 @@ function EditorChrome({
               ) : (
                 <p className={styles.editorGuide}>
                   {previewPage === "contacto"
-                    ? "Selecciona correo y redes en la vista Contacto"
-                    : "Selecciona un bloque en la vista previa"}
+                    ? "La vista es la página real. El correo y las redes se editan con el botón de la vista previa"
+                    : previewPage === "nosotros"
+                      ? "Edita la portada y el equipo debajo de la vista previa"
+                      : previewPage === "portafolio"
+                        ? "La portada y las colecciones se editan en la sección Portafolio"
+                        : "Elige un bloque sobre la vista previa para editarlo"}
                 </p>
               )}
             </>
@@ -179,6 +208,7 @@ function EditorChrome({
         {view === "editor" ? (
           <>
             <AdminPagePreview />
+            {previewPage === "nosotros" ? <AboutManager /> : null}
             <AdminEditDrawer />
           </>
         ) : view === "portfolio" ? (

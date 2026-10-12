@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Button } from "@/components/Button";
 import { useSiteConfig } from "@/components/SiteConfigProvider";
 import styles from "@/styles/hero.module.css";
@@ -12,6 +13,8 @@ type HeroSectionProps = {
     description: string;
     primaryCta: string;
     primaryHref: string;
+    contactCta: string;
+    contactHref: string;
     secondaryCta?: string;
     secondaryHref?: string;
   };
@@ -40,6 +43,9 @@ export function HeroSection({ hero, creativity, titleHotspot }: HeroSectionProps
         <p className={styles.description}>{hero.description}</p>
         <div className={styles.actions}>
           <Button href={hero.primaryHref} label={hero.primaryCta} variant="primary" icon="arrow-right" />
+          <Link href={hero.contactHref} className={styles.ghost}>
+            {hero.contactCta}
+          </Link>
           {hero.secondaryCta && hero.secondaryHref ? (
             <Button href={hero.secondaryHref} label={hero.secondaryCta} variant="play" icon="play" />
           ) : null}

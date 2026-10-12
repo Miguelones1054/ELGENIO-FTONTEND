@@ -1,0 +1,178 @@
+.page {
+  min-height: 100vh;
+  min-height: 100svh;
+  background: #fff;
+  color: #161616;
+}
+
+.frame {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+  container-type: inline-size;
+  container-name: page;
+}
+
+.cover {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 460px;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.coverImage,
+.coverFallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+.coverFallback {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 106, 0, 0.35), transparent 42%),
+    #1c1c1c;
+}
+
+.coverShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 20%, rgba(0, 0, 0, 0.72) 100%);
+}
+
+.coverCopy {
+  position: relative;
+  z-index: 1;
+  width: min(760px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 72px 0 42px;
+}
+
+.headline {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.lead {
+  max-width: 38rem;
+  margin: 16px 0 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 1.02rem;
+  line-height: 1.5;
+}
+
+.team {
+  padding: 48px 0 80px;
+}
+
+.wrap {
+  width: min(1100px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.teamTitle {
+  margin: 0 0 22px;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.empty {
+  margin: 0;
+  color: #666;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #ececec;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.portrait {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #f2f2f2;
+}
+
+.portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.portraitFallback {
+  color: #9a9a9a;
+  font-family: var(--font-display), sans-serif;
+  font-size: 3rem;
+}
+
+.name {
+  margin: 8px 0 0;
+  font-size: 1.15rem;
+  line-height: 1.15;
+}
+
+.role {
+  margin: 0;
+  color: var(--color-accent, #ff6a00);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bio {
+  margin: 0;
+  color: #3a3a3a;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .cover {
+    min-height: 340px;
+  }
+
+  .coverCopy {
+    width: min(100% - 32px, 760px);
+    padding-bottom: 28px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

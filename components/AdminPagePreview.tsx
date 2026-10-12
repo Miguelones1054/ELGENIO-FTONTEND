@@ -1,118 +1,145 @@
 "use client";
 
-import whatsappIcon from "@/assets/icons/social/whatsapp.svg";
-import { AccentShapes } from "@/components/AccentShapes";
-import { ContactPageView } from "@/components/ContactPageView";
-import { EditableHotspot } from "@/components/EditableHotspot";
-import { useAdminEditor } from "@/components/AdminEditorContext";
-import { HeroSection } from "@/components/HeroSection";
-import { MediaCollage } from "@/components/MediaCollage";
-import { SiteHeader } from "@/components/SiteHeader";
-import strings from "@/assets/strings/string-es.co.json";
+import { useEffect, useRef, useState } from "react";
+import { useAdminEditor, type EditableBlockId, type PreviewPage } from "@/components/AdminEditorContext";
 import adminStyles from "@/styles/admin.module.css";
-import welcomeStyles from "@/styles/welcome.module.css";
-import waStyles from "@/styles/whatsapp.module.css";
 
-function resolveSrc(asset: string | { src: string }) {
-  return typeof asset === "string" ? asset : asset.src;
-}
+const PAGE_SRC: Record<PreviewPage, string> = {
+  inicio: "/?vista=borrador",
+  portafolio: "/portafolio",
+  nosotros: "/nosotros?vista=borrador",
+  contacto: "/contacto",
+};
 
-function PreviewWhatsAppFab() {
-  return (
-    <div className={adminStyles.whatsappAnchor}>
-      <EditableHotspot id="whatsapp" className={adminStyles.hotspotFill}>
-        <span className={`${waStyles.fab} ${adminStyles.previewFab}`} aria-hidden>
-          <img src={resolveSrc(whatsappIcon)} alt="" className={waStyles.icon} />
-        </span>
-      </EditableHotspot>
-    </div>
-  );
-}
+const PAGE_LABEL: Record<PreviewPage, string> = {
+  inicio: "Inicio",
+  portafolio: "Portafolio",
+  nosotros: "Nosotros",
+  contacto: "Contacto",
+};
+
+const INICIO_BLOCKS: { id: EditableBlockId; label: string }[] = [
+  { id: "hero-title", label: "Título" },
+  { id: "collage-hero", label: "Fondo" },
+  { id: "collage-portrait", label: "Retrato" },
+  { id: "whatsapp", label: "WhatsApp" },
+];
 
 export function AdminPagePreview() {
-  const { select, previewViewport, previewPage } = useAdminEditor();
+  const { previewViewport, previewPage, aboutDraft, startEdit } = useAdminEditor();
   const isNarrow = previewViewport === "mobile";
-  const isContact = previewPage === "contacto";
+  const previewWidth = isNarrow ? 390 : 1280;
+  const previewHeight = isNarrow ? 844 : 900;
+  const stageRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const aboutDraftRef = useRef(aboutDraft);
+  const [scale, setScale] = useState(1);
+  aboutDraftRef.current = aboutDraft;
+
+  function publishAboutDraft() {
+    frameRef.current?.contentWindow?.postMessage(
+      { type: "about-draft", payload: aboutDraftRef.current },
+      window.location.origin,
+    );
+  }
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const update = () => {
+      const available = stage.clientWidth;
+      setScale(available > 0 ? Math.min(1, available / previewWidth) : 1);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, [previewWidth]);
+
+  useEffect(() => {
+    if (previewPage !== "nosotros") return;
+
+    publishAboutDraft();
+
+    function onReady(event: MessageEvent) {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type !== "about-preview-ready") return;
+      publishAboutDraft();
+    }
+
+    window.addEventListener("message", onReady);
+    return () => window.removeEventListener("message", onReady);
+  }, [previewPage, aboutDraft]);
+
+  const hint =
+    previewPage === "contacto"
+      ? "Así se ve Contacto. Desplázate dentro del recuadro para ver el formulario completo."
+      : previewPage === "nosotros"
+        ? "Así se ve Nosotros. La portada y el equipo cambian con el formulario de abajo."
+        : previewPage === "portafolio"
+          ? "Así se ve Portafolio. Desplázate dentro del recuadro para ver las colecciones y el cierre."
+          : isNarrow
+            ? "Así se ve Inicio en el teléfono. Desplázate dentro del recuadro."
+            : "Así se ve Inicio en escritorio. Desplázate dentro del recuadro.";
 
   return (
-    <div
-      className={adminStyles.previewStage}
-      onClick={() => select(null)}
-      role="presentation"
-    >
-      <div className={adminStyles.previewHint}>
-        {isContact
-          ? "Vista Contacto · correo, redes y WhatsApp."
-          : isNarrow
-            ? "Vista estrecha · misma página, con menú drawer para navegar."
-            : "Vista escritorio · haz clic en un bloque para editarlo."}
-      </div>
+    <div className={adminStyles.previewStage}>
+      <div className={adminStyles.previewHint}>{hint}</div>
 
-      <div
-        className={[
-          adminStyles.previewFrame,
-          isNarrow ? adminStyles.previewFrameMobile : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      >
+      {previewPage === "inicio" ? (
+        <div className={adminStyles.previewToolbar}>
+          {INICIO_BLOCKS.map((block) => (
+            <button
+              key={block.id}
+              className={adminStyles.viewportBtn}
+              type="button"
+              onClick={() => startEdit(block.id)}
+            >
+              Editar {block.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {previewPage === "contacto" ? (
+        <div className={adminStyles.previewToolbar}>
+          <button
+            className={adminStyles.viewportBtn}
+            type="button"
+            onClick={() => startEdit("contact-links")}
+          >
+            Editar correo y redes
+          </button>
+        </div>
+      ) : null}
+
+      <div className={[adminStyles.livePreview, isNarrow ? adminStyles.livePreviewMobile : ""].filter(Boolean).join(" ")}>
         <div
-          className={[
-            adminStyles.previewCanvas,
-            isNarrow ? adminStyles.previewCanvasMobile : "",
-            isContact ? adminStyles.previewCanvasPage : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
+          ref={stageRef}
+          className={adminStyles.livePreviewStage}
+          style={{ height: Math.round(previewHeight * scale) }}
         >
-          {isContact ? (
-            <div className={adminStyles.previewPage}>
-              <ContactPageView
-                className={adminStyles.previewContactRoot}
-                shellClassName={adminStyles.previewContactShell}
-                showEmptySlots
-                overlay={
-                  <EditableHotspot id="contact-links" className={adminStyles.hotspotFill} />
-                }
-              />
-              <PreviewWhatsAppFab />
-            </div>
-          ) : (
-            <main className={[welcomeStyles.page, adminStyles.previewPage].filter(Boolean).join(" ")}>
-              <div className={[welcomeStyles.landing, adminStyles.previewLanding].filter(Boolean).join(" ")}>
-                <MediaCollage
-                  heroAlt={strings.media.heroAlt}
-                  portraitAlt={strings.media.portraitAlt}
-                  handwritten={strings.aside.handwritten}
-                  playCreateGrow={strings.aside.playCreateGrow}
-                  established={strings.aside.established}
-                  studioCaption={strings.aside.studioCaption}
-                  motionCaption={strings.aside.motionCaption}
-                  heroHotspot={
-                    <EditableHotspot id="collage-hero" className={adminStyles.hotspotFill} />
-                  }
-                  portraitHotspot={
-                    <EditableHotspot id="collage-portrait" className={adminStyles.hotspotFill} />
-                  }
-                />
-                <AccentShapes />
-                <SiteHeader
-                  brand={strings.brand}
-                  nav={strings.nav}
-                  keywords={strings.header.keywords}
-                />
-                <HeroSection
-                  hero={strings.hero}
-                  creativity={strings.aside.creativity}
-                  titleHotspot={
-                    <EditableHotspot id="hero-title" className={adminStyles.hotspotFill} />
-                  }
-                />
-
-                <PreviewWhatsAppFab />
-              </div>
-            </main>
-          )}
+          <div
+            className={adminStyles.livePreviewScaler}
+            style={{
+              width: previewWidth,
+              height: previewHeight,
+              transform: `scale(${scale})`,
+            }}
+          >
+            <iframe
+              key={`${previewPage}-${previewViewport}`}
+              ref={frameRef}
+              className={adminStyles.livePreviewFrame}
+              title={`Vista previa de ${PAGE_LABEL[previewPage]}`}
+              src={PAGE_SRC[previewPage]}
+              style={{ width: previewWidth, height: previewHeight }}
+              onLoad={() => {
+                publishAboutDraft();
+                window.setTimeout(publishAboutDraft, 400);
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

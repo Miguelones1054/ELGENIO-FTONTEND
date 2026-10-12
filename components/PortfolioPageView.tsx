@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { SiteHeader } from "@/components/SiteHeader";
-import { useSiteConfig, type PortfolioItem, type PortfolioMedia } from "@/components/SiteConfigProvider";
+import { useSiteConfig, type PortfolioCover, type PortfolioItem, type PortfolioMedia } from "@/components/SiteConfigProvider";
 import { resolveMediaUrl } from "@/lib/env";
 import { collectionWorks } from "@/lib/portfolio";
 import { extractYouTubeId, getYouTubeEmbedUrl } from "@/lib/youtube";
@@ -27,10 +28,29 @@ export function PortfolioPageView() {
   const [filter, setFilter] = useState(ALL);
   const [activeCollection, setActiveCollection] = useState<PortfolioItem | null>(null);
   const [slide, setSlide] = useState(0);
+  const [draftMode, setDraftMode] = useState(false);
+  const [draft, setDraft] = useState<{ cover?: PortfolioCover; items?: PortfolioItem[] } | null>(null);
+
+  useEffect(() => {
+    const enabled = new URLSearchParams(window.location.search).get("vista") === "borrador";
+    setDraftMode(enabled);
+    if (!enabled) return;
+
+    function onMessage(event: MessageEvent) {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type !== "portfolio-draft") return;
+      setDraft(event.data.payload ?? null);
+    }
+
+    window.addEventListener("message", onMessage);
+    window.parent.postMessage({ type: "portfolio-preview-ready" }, window.location.origin);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
 
   const items = useMemo(() => {
-    return (config.portfolio || []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  }, [config.portfolio]);
+    const source = draftMode ? draft?.items || [] : config.portfolio || [];
+    return source.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [config.portfolio, draft?.items, draftMode]);
 
   const categories = useMemo(() => {
     const known = new Set<string>(page.categories);
@@ -47,7 +67,7 @@ export function PortfolioPageView() {
     return items.filter((item) => item.category?.trim().toLowerCase() === filter.toLowerCase());
   }, [filter, items]);
 
-  const cover = config.portfolioCover;
+  const cover = draftMode ? draft?.cover : config.portfolioCover;
   const heroImage = cover?.imageUrl
     ? resolveMediaUrl(cover.imageUrl)
     : items[0]?.imageUrl
@@ -69,10 +89,23 @@ export function PortfolioPageView() {
         "--lead-size-mobile": `${Math.max(13, Math.round(leadSize * 0.92))}px`,
       } as CSSProperties)
     : undefined;
-  const fadeWidth = cover?.fadeWidth ?? 16;
-  const fadeMid = Math.max(0, Math.round(fadeWidth * 0.4));
+  const fadeWidth = Math.min(100, Math.max(0, cover?.fadeWidth ?? 16));
+  const fadeCurve: Array<[number, number]> = [
+    [0, 0.94],
+    [0.2, 0.9],
+    [0.4, 0.74],
+    [0.58, 0.52],
+    [0.74, 0.3],
+    [0.88, 0.12],
+    [0.96, 0.04],
+    [1, 0],
+  ];
+  const fadeStops = fadeCurve
+    .map(([at, alpha]) => `rgba(255, 255, 255, ${alpha}) ${Math.round(fadeWidth * at * 10) / 10}%`)
+    .join(", ");
   const fadeStyle = {
-    background: `linear-gradient(90deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.32) ${fadeMid}%, rgba(255, 255, 255, 0) ${fadeWidth}%)`,
+    background:
+      fadeWidth <= 0 ? "transparent" : `linear-gradient(90deg, ${fadeStops})`,
   };
   const coverPosition = `${cover?.positionX ?? 72}% ${cover?.positionY ?? 50}%`;
 
@@ -266,9 +299,27 @@ function CollectionCard({
   const category = item.category?.trim();
   const description = item.description?.trim();
   const works = collectionWorks(item);
+  const coverRef = useRef<HTMLImageElement>(null);
+  const [vertical, setVertical] = useState(false);
+
+  function readCover(image: HTMLImageElement) {
+    if (!image.naturalWidth || !image.naturalHeight) return;
+    setVertical(image.naturalHeight > image.naturalWidth);
+  }
+
+  useEffect(() => {
+    const image = coverRef.current;
+    if (!image?.complete) {
+      setVertical(false);
+      return;
+    }
+    readCover(image);
+  }, [item.imageUrl]);
+
+  const cardClass = vertical ? styles.cardVertical : size === "wide" ? styles.cardWide : styles.card;
 
   return (
-    <article className={size === "wide" ? styles.cardWide : styles.card}>
+    <article className={cardClass}>
       <button
         type="button"
         className={styles.cardButton}
@@ -276,9 +327,11 @@ function CollectionCard({
         aria-label={title || category || "Ver proyecto"}
       >
         <img
+          ref={coverRef}
           src={resolveMediaUrl(item.imageUrl)}
           alt={title || "Proyecto del portafolio"}
           className={styles.cardImage}
+          onLoad={(event) => readCover(event.currentTarget)}
         />
         <span className={styles.cardShade} />
         <span className={styles.cardCopy}>
@@ -323,7 +376,7 @@ function CollectionViewer({
   const youtubeId = current?.kind === "video" ? extractYouTubeId(current.url) : null;
   const youtubeEmbed = youtubeId ? getYouTubeEmbedUrl(current.url, true) : null;
 
-  return (
+  const dialog = (
     <div
       className={styles.viewer}
       role="dialog"
@@ -432,6 +485,8 @@ function CollectionViewer({
       </div>
     </div>
   );
+
+  return createPortal(dialog, document.body);
 }
 
 function ServiceIcon({ index }: { index: number }) {

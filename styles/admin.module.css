@@ -432,6 +432,44 @@
   font-weight: 600;
 }
 
+.previewToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: min(1280px, 100%);
+  margin: 0 auto 10px;
+}
+
+.livePreview {
+  width: min(1280px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid #8d8d8d;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.livePreviewMobile {
+  width: min(390px, 100%);
+}
+
+.livePreviewStage {
+  width: 100%;
+  overflow: hidden;
+  background: #fff;
+}
+
+.livePreviewScaler {
+  transform-origin: top left;
+}
+
+.livePreviewFrame {
+  display: block;
+  border: 0;
+  background: #fff;
+}
+
 .previewFrame {
   width: min(1280px, 100%);
   margin: 0 auto;
@@ -462,6 +500,27 @@
 .previewCanvasPage {
   aspect-ratio: 16 / 10;
   overflow: hidden;
+}
+
+.previewCanvasScroll {
+  aspect-ratio: auto;
+  height: min(78vh, 860px);
+  overflow: auto;
+}
+
+.previewCanvasScroll .previewPage {
+  position: relative;
+  inset: auto;
+  height: auto;
+  min-height: 100%;
+}
+
+.previewCanvasScroll .previewContactRoot,
+.previewCanvasScroll .previewContactShell {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 880px !important;
+  overflow: visible !important;
 }
 
 .previewPage {
@@ -728,6 +787,11 @@
 
   .previewCanvas {
     aspect-ratio: 9 / 14;
+  }
+
+  .previewCanvas.previewCanvasScroll {
+    aspect-ratio: auto;
+    height: min(78vh, 860px);
   }
 
   .whatsappAnchor {
@@ -2093,6 +2157,124 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 32px 24px 64px;
+}
+
+.portfolioPreview {
+  margin-top: 42px;
+  padding-top: 28px;
+  border-top: 1px solid #e4e4e4;
+}
+
+.portfolioPreviewHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.portfolioPreviewTitle {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+}
+
+.portfolioPreviewCopy {
+  margin: 0;
+  color: #5c5c5c;
+  font-size: 0.9rem;
+}
+
+.portfolioPreviewStage {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #d5d5d5;
+  border-radius: 16px;
+  background: #ececec;
+}
+
+.portfolioPreviewScaler {
+  transform-origin: top left;
+}
+
+.portfolioPreviewFrame {
+  display: block;
+  border: 0;
+  background: #fff;
+}
+
+.aboutEditor {
+  width: min(1280px, calc(100% - 32px));
+  margin: 0 auto 28px;
+  padding: 8px 0 12px;
+}
+
+.aboutEditorHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.aboutEditorHead h3 {
+  margin: 0;
+}
+
+.aboutToast {
+  margin: 0 0 12px;
+  color: #0f7a3a;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.aboutGrid {
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.aboutCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid #e4e4e4;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.aboutMembers {
+  display: grid;
+  gap: 12px;
+}
+
+.aboutMember {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+}
+
+.aboutCoverPreview,
+.aboutMemberPhoto {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.aboutMemberPhoto {
+  width: 96px;
+  height: 120px;
+}
+
+@media (max-width: 800px) {
+  .aboutGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .portfolioHeader {

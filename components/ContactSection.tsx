@@ -4,9 +4,11 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import heroCamera from "@/assets/images/hero-camera.png";
 import { ContactLeadForm } from "@/components/ContactLeadForm";
+import whatsappIcon from "@/assets/icons/social/whatsapp.svg";
 import { Icon } from "@/components/Icon";
 import { iconSrc, type IconId } from "@/assets/icons";
 import { useSiteConfig } from "@/components/SiteConfigProvider";
+import strings from "@/assets/strings/string-es.co.json";
 import {
   CONTACT_SOCIALS,
   resolveSocialHref,
@@ -58,6 +60,10 @@ export function ContactSection({
   }).filter((item) => showEmptySlots || item.href);
 
   const email = links.email?.trim() || "";
+  const whatsappPhone = config.whatsappPhone?.replace(/\D/g, "") || "";
+  const whatsappLink = whatsappPhone
+    ? `https://wa.me/${whatsappPhone}?${new URLSearchParams({ text: strings.whatsapp.message }).toString()}`
+    : "";
 
   return (
     <section
@@ -145,6 +151,21 @@ export function ContactSection({
         </div>
 
         <div className={styles.formCol}>
+          {whatsappLink ? (
+            <a
+              className={styles.whatsappCall}
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className={styles.whatsappCallTitle}>{strings.whatsapp.promptTitle}</span>
+              <span className={styles.whatsappCallCopy}>{strings.whatsapp.promptCopy}</span>
+              <span className={styles.whatsappCallBtn}>
+                <img src={resolveSrc(whatsappIcon)} alt="" className={styles.whatsappCallIcon} />
+                {strings.whatsapp.promptButton}
+              </span>
+            </a>
+          ) : null}
           <ContactLeadForm />
         </div>
       </div>

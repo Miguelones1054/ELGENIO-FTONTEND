@@ -78,6 +78,26 @@ export type PortfolioCover = {
   badgeLine2?: string;
 };
 
+export type AboutCover = {
+  imageUrl: string;
+  headline: string;
+  description: string;
+};
+
+export type AboutMember = {
+  id: string;
+  name: string;
+  role: string;
+  description: string;
+  imageUrl: string;
+  order?: number;
+};
+
+export type AboutPage = {
+  cover: AboutCover;
+  members: AboutMember[];
+};
+
 export type SiteConfig = {
   whatsappPhone: string;
   heroTitle: {
@@ -95,6 +115,7 @@ export type SiteConfig = {
   coverVideo?: CoverVideo;
   portfolioCover?: PortfolioCover;
   portfolio?: PortfolioItem[];
+  about?: AboutPage;
 };
 
 type SiteConfigContextValue = {
@@ -132,7 +153,7 @@ function fetchSiteConfigOnce(force = false): Promise<SiteConfig> {
     return siteConfigInFlight;
   }
 
-  const request = apiFetch<SiteConfig>("/site-config")
+  const request = apiFetch<SiteConfig>("/site-config", { cache: "no-store" })
     .then((data) => {
       validateSiteConfig(data);
       return data;
