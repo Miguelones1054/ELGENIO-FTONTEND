@@ -20,6 +20,17 @@ type CatalogResponse = {
   servicios: CatalogService[];
 };
 
+async function loadCatalog() {
+  try {
+    return await apiFetch<CatalogResponse>("/servicios");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (!message.toLowerCase().includes("límite")) throw error;
+    await new Promise((resolve) => window.setTimeout(resolve, 1600));
+    return apiFetch<CatalogResponse>("/servicios");
+  }
+}
+
 const currency = new Intl.NumberFormat("es-CO", {
   style: "currency",
   currency: "COP",
@@ -59,7 +70,7 @@ export function ServicesPageView() {
   useEffect(() => {
     let cancelled = false;
     setStatus("loading");
-    apiFetch<CatalogResponse>("/servicios")
+    loadCatalog()
       .then((data) => {
         if (cancelled) return;
         setServices(data.servicios || []);
