@@ -371,10 +371,52 @@ function CollectionViewer({
   onClose: () => void;
 }) {
   const current = works[slide];
+  const description = item.description?.trim() || "";
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const [descriptionOverflows, setDescriptionOverflows] = useState(false);
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
   const hasButton = Boolean(item.hasButton && item.buttonText?.trim() && item.buttonUrl?.trim());
   const external = hasButton ? isExternalLink(item.buttonUrl!) : false;
   const youtubeId = current?.kind === "video" ? extractYouTubeId(current.url) : null;
   const youtubeEmbed = youtubeId ? getYouTubeEmbedUrl(current.url, true) : null;
+
+  useEffect(() => {
+    setDescriptionOpen(false);
+  }, [item.id]);
+
+  useEffect(() => {
+    const node = descriptionRef.current;
+    if (!node) return;
+
+    function measure() {
+      const text = descriptionRef.current;
+      if (!text) return;
+      const narrow = window.matchMedia("(max-width: 900px)").matches;
+      if (!narrow || descriptionOpen) {
+        if (!narrow) setDescriptionOverflows(false);
+        return;
+      }
+
+      const probe = document.createElement("div");
+      const style = getComputedStyle(text);
+      probe.textContent = description;
+      probe.style.position = "absolute";
+      probe.style.visibility = "hidden";
+      probe.style.pointerEvents = "none";
+      probe.style.width = `${text.clientWidth}px`;
+      probe.style.font = style.font;
+      probe.style.lineHeight = style.lineHeight;
+      text.parentElement?.appendChild(probe);
+      const lineHeight = Number.parseFloat(style.lineHeight) || 24;
+      setDescriptionOverflows(probe.offsetHeight > lineHeight * 2 + 2);
+      probe.remove();
+    }
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [description, descriptionOpen]);
 
   const dialog = (
     <div
@@ -388,16 +430,38 @@ function CollectionViewer({
         <Icon id="actions/x" className={styles.closeIcon} />
       </button>
       <div className={styles.viewerPanel} onClick={(event) => event.stopPropagation()}>
-        <div className={styles.viewerHead}>
-          <div>
+        <div className={styles.viewerMain}>
+          <div className={styles.viewerCopy}>
             {item.category?.trim() ? <p className={styles.lightboxCategory}>{item.category}</p> : null}
-            <h3 className={styles.lightboxTitle}>{item.title?.trim() || "Colección"}</h3>
-            {item.description?.trim() ? <p className={styles.lightboxDescription}>{item.description}</p> : null}
+            <div className={styles.viewerTitleRow}>
+              <h3 className={styles.lightboxTitle}>{item.title?.trim() || "Colección"}</h3>
+              <p className={styles.viewerCount}>
+                {works.length === 0 ? "0" : slide + 1} / {works.length}
+              </p>
+            </div>
+            {description ? (
+              <p
+                ref={descriptionRef}
+                className={[
+                  styles.lightboxDescription,
+                  descriptionOpen ? styles.lightboxDescriptionOpen : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                {description}
+              </p>
+            ) : null}
+            {description && (descriptionOverflows || descriptionOpen) ? (
+              <button
+                type="button"
+                className={styles.seeMore}
+                onClick={() => setDescriptionOpen((open) => !open)}
+              >
+                {descriptionOpen ? "Ver menos" : "Ver más"}
+              </button>
+            ) : null}
           </div>
-          <p className={styles.viewerCount}>
-            {works.length === 0 ? "0" : slide + 1} / {works.length}
-          </p>
-        </div>
 
         <div className={styles.viewerStage}>
           {works.length > 1 ? (
@@ -442,6 +506,7 @@ function CollectionViewer({
               <Icon id="actions/chevron-right" className={styles.viewerArrowIcon} />
             </button>
           ) : null}
+        </div>
         </div>
 
         {works.length > 1 ? (

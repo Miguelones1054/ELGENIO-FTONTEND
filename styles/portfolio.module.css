@@ -545,6 +545,26 @@
   color: #fff;
 }
 
+.viewerMain {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.viewerCopy {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 16px 18px 8px;
+}
+
+.viewerTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .viewerHead,
 .viewerFooter {
   display: flex;
@@ -743,20 +763,112 @@
 
 .lightboxTitle {
   margin: 0;
+  min-width: 0;
   font-family: var(--font-display), sans-serif;
   font-size: 1.8rem;
-  line-height: 1;
+  line-height: 0.95;
   text-transform: uppercase;
 }
 
 .lightboxDescription {
-  margin: 8px 0 0;
-  max-width: 560px;
-  max-height: 2.9em;
-  overflow: hidden;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 0.95rem;
-  line-height: 1.45;
+  margin: 12px 0 0;
+  max-width: none;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.02rem;
+  line-height: 1.55;
+}
+
+.seeMore {
+  display: inline-flex;
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@media (min-width: 901px) {
+  .viewer {
+    align-items: center;
+    padding: 48px 32px;
+  }
+
+  .viewerPanel {
+    width: min(860px, 100%);
+    height: auto;
+    max-height: min(680px, 82vh);
+  }
+
+  .viewerMain {
+    display: grid;
+    grid-template-columns: minmax(200px, 250px) minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 18px;
+    padding: 16px 16px 0 18px;
+  }
+
+  .viewerCopy {
+    max-height: min(400px, 46vh);
+    min-height: 0;
+    overflow: auto;
+    padding: 4px 6px 8px 0;
+  }
+
+  .lightboxTitle {
+    font-size: 1.45rem;
+  }
+
+  .viewerStage {
+    flex: 0 0 auto;
+    width: 100%;
+    height: min(400px, 46vh);
+    margin: 0 0 14px;
+  }
+
+  .seeMore {
+    position: sticky;
+    bottom: 0;
+    padding: 8px 0 2px;
+    background: #111;
+  }
+}
+
+@media (max-width: 900px) {
+  .viewerCopy {
+    display: flex;
+    flex-direction: column;
+    max-height: 42%;
+    overflow: hidden;
+  }
+
+  .viewerTitleRow,
+  .lightboxCategory {
+    flex: 0 0 auto;
+  }
+
+  .lightboxDescription:not(.lightboxDescriptionOpen) {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .lightboxDescriptionOpen {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .seeMore {
+    flex: 0 0 auto;
+    background: #111;
+  }
 }
 
 @media (max-width: 980px) {
