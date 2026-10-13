@@ -188,7 +188,7 @@
 }
 
 .memberClose {
-  position: absolute;
+  position: fixed;
   top: 16px;
   right: 16px;
   z-index: 1;
@@ -262,6 +262,28 @@
 
   .memberCopy {
     padding: 72px 56px 48px;
+  }
+}
+
+@media (max-width: 900px) {
+  .memberModal {
+    display: block;
+    overflow: auto;
+  }
+
+  .memberPhoto {
+    overflow: visible;
+  }
+
+  .memberPhoto img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .memberCopy {
+    overflow: visible;
   }
 }
 
