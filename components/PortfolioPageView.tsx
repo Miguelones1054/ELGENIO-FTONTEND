@@ -374,6 +374,7 @@ function CollectionViewer({
   const description = item.description?.trim() || "";
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [descriptionOverflows, setDescriptionOverflows] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
   const hasButton = Boolean(item.hasButton && item.buttonText?.trim() && item.buttonUrl?.trim());
   const external = hasButton ? isExternalLink(item.buttonUrl!) : false;
@@ -383,6 +384,10 @@ function CollectionViewer({
   useEffect(() => {
     setDescriptionOpen(false);
   }, [item.id]);
+
+  useEffect(() => {
+    setVideoFailed(false);
+  }, [current?.id]);
 
   useEffect(() => {
     const node = descriptionRef.current;
@@ -481,6 +486,9 @@ function CollectionViewer({
                 allowFullScreen
               />
             ) : current.kind === "video" ? (
+              videoFailed ? (
+              <p className={styles.viewerEmpty}>No se pudo reproducir este video.</p>
+            ) : (
               <video
                 key={current.id}
                 className={styles.viewerMedia}
@@ -488,7 +496,10 @@ function CollectionViewer({
                 controls
                 autoPlay
                 playsInline
+                preload="metadata"
+                onError={() => setVideoFailed(true)}
               />
+            )
             ) : (
               <img
                 key={current.id}

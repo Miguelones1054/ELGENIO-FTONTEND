@@ -25,6 +25,20 @@ type CoverForm = {
   positionY: number;
 };
 
+function isPortfolioVideo(file: File) {
+  const type = file.type.toLowerCase();
+  const name = file.name.toLowerCase();
+  if (/\.(mp4|webm|mov|m4v|qt)$/.test(name)) return true;
+  return (
+    type === "video/mp4" ||
+    type === "video/webm" ||
+    type === "video/quicktime" ||
+    type === "video/x-m4v" ||
+    type === "video/m4v" ||
+    type === "application/mp4"
+  );
+}
+
 const initialCover: CoverForm = {
   imageUrl: "",
   headline: pageCopy.headline,
@@ -296,7 +310,17 @@ export function PortfolioManager() {
   function addWorkFiles(files: FileList | null, kind: "image" | "video") {
     if (!files?.length) return;
     const next = [...form.media];
+    let rejected = "";
     for (const file of Array.from(files)) {
+      if (kind === "video" && !isPortfolioVideo(file)) {
+        rejected = "El video debe ser MP4, MOV, M4V o WebM.";
+        continue;
+      }
+      if (kind === "video" && file.size > 90 * 1024 * 1024) {
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(0);
+        rejected = `El video pesa ${sizeMb} MB. El máximo para subirlo es 90 MB. Comprime el archivo o pega un enlace de YouTube.`;
+        continue;
+      }
       next.push({
         id: draftId(),
         kind,
@@ -305,6 +329,7 @@ export function PortfolioManager() {
         preview: URL.createObjectURL(file),
       });
     }
+    if (rejected) showToast(rejected, "error");
     setForm({ ...form, media: next });
   }
 
@@ -1022,7 +1047,7 @@ export function PortfolioManager() {
             <div className={styles.portfolioMediaBlock}>
               <label className={styles.fieldLabel}>Trabajos de la marca</label>
               <p className={styles.toggleSubtitle}>
-                Estas fotos y videos se abren en carrusel al oprimir la tarjeta.
+                Estas fotos y videos se abren en carrusel al oprimir la tarjeta. Los videos se convierten a MP4 al guardarlos. Máximo 90 MB; si pesa más, pega un enlace de YouTube.
               </p>
               <div className={styles.portfolioMediaActions}>
                 <button type="button" className={styles.secondaryAction} onClick={() => workImageRef.current?.click()}>
@@ -1045,7 +1070,7 @@ export function PortfolioManager() {
                 <input
                   ref={workVideoRef}
                   type="file"
-                  accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                  accept="video/mp4,video/webm,video/quicktime,video/x-m4v,.mp4,.webm,.mov,.m4v"
                   multiple
                   hidden
                   onChange={(event) => {

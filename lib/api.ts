@@ -50,6 +50,10 @@ export async function apiUpload<T>(path: string, formData: FormData, init: Reque
     body: formData,
   });
 
+  if (response.status === 413) {
+    throw new Error("El archivo es demasiado pesado para subirlo. Usa un video de menos de 90 MB o pega un enlace de YouTube.");
+  }
+
   const text = await response.text();
   let data = {} as T & ApiErrorBody;
 
