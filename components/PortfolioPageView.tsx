@@ -23,6 +23,12 @@ function cardSize(index: number) {
   return index % 5 < 2 ? "wide" : "regular";
 }
 
+function fewWords(text: string, count = 8) {
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length <= count) return text;
+  return `${words.slice(0, count).join(" ")}…`;
+}
+
 export function PortfolioPageView() {
   const { config } = useSiteConfig();
   const [filter, setFilter] = useState(ALL);
@@ -166,12 +172,6 @@ export function PortfolioPageView() {
               <p className={styles.lead} style={leadStyle}>
                 {lead}
               </p>
-              <Link href={page.reelHref} className={styles.reelButton}>
-                <span className={styles.reelPlay} aria-hidden="true">
-                  <Icon id="actions/play" className={styles.reelPlayIcon} />
-                </span>
-                {page.reelLabel}
-              </Link>
             </div>
           </div>
         </section>
@@ -298,7 +298,6 @@ function CollectionCard({
   const title = item.title?.trim();
   const category = item.category?.trim();
   const description = item.description?.trim();
-  const works = collectionWorks(item);
   const coverRef = useRef<HTMLImageElement>(null);
   const [vertical, setVertical] = useState(false);
 
@@ -342,17 +341,16 @@ function CollectionCard({
               <span aria-hidden="true"> →</span>
             </span>
           ) : null}
-          {description ? <span className={styles.cardDescription}>{description}</span> : null}
-          {works.length > 0 ? (
-            <span className={styles.cardCount}>
-              {works.length} {works.length === 1 ? "trabajo" : "trabajos"}
-            </span>
-          ) : null}
-        </span>
-        <span className={styles.playButton} aria-hidden="true">
-          <Icon id="actions/play" className={styles.playIcon} />
         </span>
       </button>
+      {description ? (
+        <p className={styles.cardExcerpt}>
+          {fewWords(description)}
+          <button type="button" className={styles.cardMore} onClick={onOpen}>
+            Ver más
+          </button>
+        </p>
+      ) : null}
     </article>
   );
 }

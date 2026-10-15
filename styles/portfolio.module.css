@@ -220,21 +220,15 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-auto-flow: dense;
-  gap: 16px;
+  gap: 22px 16px;
 }
 
-.cardWide {
-  grid-column: span 3;
-}
-
-.card {
-  grid-column: span 2;
-}
-
+.cardWide,
+.card,
 .cardVertical {
-  grid-column: span 3;
+  grid-column: span 1;
 }
 
 .cardButton {
@@ -253,12 +247,9 @@
   cursor: pointer;
 }
 
-.cardWide .cardButton {
-  aspect-ratio: 16 / 10;
-}
-
+.cardWide .cardButton,
 .cardVertical .cardButton {
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 4 / 3;
 }
 
 .cardVertical .cardImage {
@@ -288,7 +279,7 @@
 
 .cardCopy {
   position: absolute;
-  right: 64px;
+  right: 16px;
   bottom: 16px;
   left: 16px;
   display: flex;
@@ -315,42 +306,28 @@
   font-size: clamp(1.35rem, 2vw, 1.85rem);
 }
 
-.cardDescription {
-  display: -webkit-box;
-  overflow: hidden;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 0.84rem;
-  line-height: 1.35;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.cardExcerpt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 10px 2px 0;
+  color: #3a3a3a;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
-.cardCount {
-  margin-top: 2px;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 0.72rem;
+.cardMore {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #161616;
+  font: inherit;
+  font-size: 0.9rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.playButton {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
-  color: #111;
-}
-
-.playIcon {
-  width: 14px;
-  height: 14px;
-  margin-left: 2px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 .emptyState {
@@ -987,7 +964,7 @@
   }
 
   .cardCopy {
-    right: 58px;
+    right: 14px;
     bottom: 14px;
     left: 14px;
   }
