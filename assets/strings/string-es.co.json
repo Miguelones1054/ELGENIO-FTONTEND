@@ -32,7 +32,9 @@
     "primaryCta": "Ve nuestro trabajo",
     "primaryHref": "/portafolio",
     "contactCta": "Contáctanos",
-    "contactHref": "/contacto"
+    "contactHref": "/contacto",
+    "downloadCta": "Descargar material",
+    "downloadHref": "https://nodefex.com/entregas"
   },
   "aside": {
     "creativity": ["Creatividad", "que mueve", "marcas"],

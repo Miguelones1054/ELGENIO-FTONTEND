@@ -29,6 +29,42 @@ function fewWords(text: string, count = 8) {
   return `${words.slice(0, count).join(" ")}…`;
 }
 
+type CollageVideo = {
+  id: string;
+  url: string;
+  title: string;
+  item: PortfolioItem;
+  slide: number;
+};
+
+function collectionVideos(items: PortfolioItem[]): CollageVideo[] {
+  const videos: CollageVideo[] = [];
+  for (const item of items) {
+    collectionWorks(item).forEach((work, index) => {
+      if (work.kind !== "video" || !work.url?.trim()) return;
+      videos.push({
+        id: work.id || `${item.id}-video-${index}`,
+        url: work.url.trim(),
+        title: item.title?.trim() || "Video",
+        item,
+        slide: index,
+      });
+    });
+  }
+  return videos;
+}
+
+function shuffleVideos(videos: CollageVideo[]) {
+  const next = [...videos];
+  for (let index = next.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(Math.random() * (index + 1));
+    const current = next[index];
+    next[index] = next[swap];
+    next[swap] = current;
+  }
+  return next;
+}
+
 export function PortfolioPageView() {
   const { config } = useSiteConfig();
   const [filter, setFilter] = useState(ALL);
@@ -72,6 +108,14 @@ export function PortfolioPageView() {
     if (filter === ALL) return items;
     return items.filter((item) => item.category?.trim().toLowerCase() === filter.toLowerCase());
   }, [filter, items]);
+
+  const sourceVideos = useMemo(() => collectionVideos(visibleItems), [visibleItems]);
+  const videoKey = sourceVideos.map((video) => video.id).join("|");
+  const [collageVideos, setCollageVideos] = useState<CollageVideo[] | null>(null);
+
+  useEffect(() => {
+    setCollageVideos(shuffleVideos(sourceVideos));
+  }, [videoKey, sourceVideos]);
 
   const cover = draftMode ? draft?.cover : config.portfolioCover;
   const heroImage = cover?.imageUrl
@@ -117,9 +161,9 @@ export function PortfolioPageView() {
 
   const activeWorks = activeCollection ? collectionWorks(activeCollection) : [];
 
-  function openCollection(item: PortfolioItem) {
+  function openCollection(item: PortfolioItem, slideIndex = 0) {
     setActiveCollection(item);
-    setSlide(0);
+    setSlide(slideIndex);
   }
 
   function moveSlide(direction: -1 | 1) {
@@ -228,6 +272,19 @@ export function PortfolioPageView() {
               ))}
             </div>
           )}
+
+          {collageVideos && collageVideos.length > 0 ? (
+            <div className={styles.videoCollage} role="region" aria-label="Videos de las colecciones">
+              {collageVideos.map((video, index) => (
+                <VideoTile
+                  key={video.id}
+                  video={video}
+                  size={index % 7 === 0 ? "wide" : index % 7 === 3 ? "tall" : "regular"}
+                  onOpen={() => openCollection(video.item, video.slide)}
+                />
+              ))}
+            </div>
+          ) : null}
         </section>
 
         <section className={styles.services} aria-labelledby="services-title">
@@ -283,6 +340,35 @@ export function PortfolioPageView() {
         />
       ) : null}
     </main>
+  );
+}
+
+function VideoTile({
+  video,
+  size,
+  onOpen,
+}: {
+  video: CollageVideo;
+  size: "wide" | "tall" | "regular";
+  onOpen: () => void;
+}) {
+  const youtubeId = extractYouTubeId(video.url);
+  const className = [
+    styles.videoTile,
+    size === "wide" ? styles.videoTileWide : "",
+    size === "tall" ? styles.videoTileTall : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <button type="button" className={className} onClick={onOpen} aria-label={video.title}>
+      {youtubeId ? (
+        <img src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`} alt="" />
+      ) : (
+        <video src={resolveMediaUrl(video.url)} muted loop playsInline autoPlay preload="metadata" />
+      )}
+    </button>
   );
 }
 

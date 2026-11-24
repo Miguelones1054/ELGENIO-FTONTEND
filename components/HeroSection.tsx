@@ -15,6 +15,8 @@ type HeroSectionProps = {
     primaryHref: string;
     contactCta: string;
     contactHref: string;
+    downloadCta?: string;
+    downloadHref?: string;
     secondaryCta?: string;
     secondaryHref?: string;
   };
@@ -46,6 +48,11 @@ export function HeroSection({ hero, creativity, titleHotspot }: HeroSectionProps
           <Link href={hero.contactHref} className={styles.ghost}>
             {hero.contactCta}
           </Link>
+          {hero.downloadCta && hero.downloadHref ? (
+            <a href={hero.downloadHref} className={styles.ghost} target="_blank" rel="noopener noreferrer">
+              {hero.downloadCta}
+            </a>
+          ) : null}
           {hero.secondaryCta && hero.secondaryHref ? (
             <Button href={hero.secondaryHref} label={hero.secondaryCta} variant="play" icon="play" />
           ) : null}
