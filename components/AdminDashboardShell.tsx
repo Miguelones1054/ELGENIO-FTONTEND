@@ -10,11 +10,12 @@ import { ContactRequestsPanel } from "@/components/ContactRequestsPanel";
 import { EmailTemplateManager } from "@/components/EmailTemplateManager";
 import { CoverVideoManager } from "@/components/CoverVideoManager";
 import { PortfolioManager } from "@/components/PortfolioManager";
+import { ProductionsManager } from "@/components/ProductionsManager";
 import { adminSignOut } from "@/lib/admin-auth";
 import { getAdminToken, getAdminUser, type AdminSessionUser } from "@/lib/admin-session";
 import styles from "@/styles/admin.module.css";
 
-type AdminView = "editor" | "portfolio" | "cover-video" | "email" | "requests";
+type AdminView = "editor" | "portfolio" | "productions" | "cover-video" | "email" | "requests";
 
 function EditorChrome({
   user,
@@ -38,6 +39,7 @@ function EditorChrome({
     if (view === "requests") return "Peticiones de usuarios";
     if (view === "email") return "Plantilla de correo automático";
     if (view === "cover-video") return "Video de portada emergente";
+    if (view === "productions") return "Producciones";
     if (view === "portfolio") return "Gestión de Portafolio";
     return "Editor visual";
   }
@@ -70,6 +72,15 @@ function EditorChrome({
               onClick={() => setView("portfolio")}
             >
               Portafolio
+            </button>
+            <button
+              className={[styles.viewportBtn, view === "productions" ? styles.viewportBtnActive : ""]
+                .filter(Boolean)
+                .join(" ")}
+              type="button"
+              onClick={() => setView("productions")}
+            >
+              Producciones
             </button>
             <button
               className={[styles.viewportBtn, view === "cover-video" ? styles.viewportBtnActive : ""]
@@ -213,6 +224,8 @@ function EditorChrome({
           </>
         ) : view === "portfolio" ? (
           <PortfolioManager />
+        ) : view === "productions" ? (
+          <ProductionsManager />
         ) : view === "cover-video" ? (
           <CoverVideoManager />
         ) : view === "email" ? (

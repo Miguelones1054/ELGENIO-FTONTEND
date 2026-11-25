@@ -41,6 +41,7 @@ const SECTION_TITLE_MAP: Record<string, string> = {
   "/portafolio": "Portafolio",
   "/nosotros": "Nosotros",
   "/contacto": "Contacto",
+  "/entregas": "Entregas",
   "/reel": "Showreel",
 };
 

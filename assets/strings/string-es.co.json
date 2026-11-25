@@ -34,7 +34,7 @@
     "contactCta": "Contáctanos",
     "contactHref": "/contacto",
     "downloadCta": "Descargar material",
-    "downloadHref": "https://nodefex.com/entregas"
+    "downloadHref": "/entregas"
   },
   "aside": {
     "creativity": ["Creatividad", "que mueve", "marcas"],
@@ -49,6 +49,16 @@
     "portraitAlt": "Realizador de El Genio en set"
   },
   "pages": {
+    "entregas": {
+      "title": "Entregas",
+      "headline": "Descarga tu material.",
+      "copy": "Escribe la referencia de tu producción y el PIN de 4 dígitos.",
+      "referenceLabel": "Referencia",
+      "referencePlaceholder": "Referencia de la producción",
+      "pinLabel": "PIN",
+      "pinPlaceholder": "4 dígitos",
+      "submit": "Ver producción"
+    },
     "servicios": {
       "title": "Servicios",
       "headline": "Encuentra el servicio que necesitas.",

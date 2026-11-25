@@ -49,9 +49,9 @@ export function HeroSection({ hero, creativity, titleHotspot }: HeroSectionProps
             {hero.contactCta}
           </Link>
           {hero.downloadCta && hero.downloadHref ? (
-            <a href={hero.downloadHref} className={styles.ghost} target="_blank" rel="noopener noreferrer">
+            <Link href={hero.downloadHref} className={styles.ghost}>
               {hero.downloadCta}
-            </a>
+            </Link>
           ) : null}
           {hero.secondaryCta && hero.secondaryHref ? (
             <Button href={hero.secondaryHref} label={hero.secondaryCta} variant="play" icon="play" />
