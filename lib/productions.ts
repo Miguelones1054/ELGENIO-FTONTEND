@@ -100,7 +100,7 @@ export function detectProductionFileKind(file: File): ProductionFileKind | null 
 export function buildDeliveryShareMessage(reference: string, pin: string): string {
   return `✨ ¡Gracias por confiar en El Genio!
 
-Tu material ya está listo para descargar. Ingresa a **elgenio.co/entregas** y utiliza los siguientes datos para acceder:
+Tu material ya está listo para descargar. Ingresa a elgenio.co/entregas y utiliza los siguientes datos para acceder:
 
 🔐 Referencia: ${reference}
 🔑 PIN de acceso: ${pin}
